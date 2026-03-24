@@ -74,13 +74,13 @@ sleep 10
 echo "[5/6] Erstelle Lambda-Funktion: $LAMBDA_FUNCTION_NAME"
 LAMBDA_DIR="$SCRIPT_DIR/../lambda"
 cd "$LAMBDA_DIR"
-zip -j /tmp/lambda_function.zip lambda_function.py
+python3 -c "import zipfile; zf = zipfile.ZipFile('lambda_function.zip', mode='w'); zf.write('lambda_function.py')"
 
 if aws lambda get-function --function-name "$LAMBDA_FUNCTION_NAME" 2>/dev/null; then
     echo "       Funktion existiert bereits, aktualisiere Code..."
     aws lambda update-function-code \
         --function-name "$LAMBDA_FUNCTION_NAME" \
-        --zip-file fileb:///tmp/lambda_function.zip \
+        --zip-file fileb://lambda_function.zip \
         --output text
 else
     aws lambda create-function \
@@ -88,13 +88,15 @@ else
         --runtime python3.12 \
         --role "$ROLE_ARN" \
         --handler lambda_function.lambda_handler \
-        --zip-file fileb:///tmp/lambda_function.zip \
+        --zip-file fileb://lambda_function.zip \
         --timeout 30 \
         --memory-size 256 \
         --region "$REGION" \
         --output text
     echo "       Lambda-Funktion erstellt."
 fi
+
+rm lambda_function.zip
 
 echo "       Warte 5 Sekunden bis die Funktion bereit ist..."
 sleep 5

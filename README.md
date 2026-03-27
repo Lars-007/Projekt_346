@@ -198,6 +198,7 @@ Projekt_346/
 
 ## Reflexion
 
+<<<<<<< HEAD
 ### Teammitglied 1 – [Name]
 
 **Was lief gut:**
@@ -234,6 +235,19 @@ Projekt_346/
 
 **Persönliches Fazit:**
 *(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
+=======
+### Lars Hellstern
+
+Das Projekt hat mir geholfen, den praktischen Umgang mit AWS-Diensten besser zu verstehen. Die grösste Herausforderung war die Konfiguration des S3-Triggers und der IAM-Berechtigungen – hier musste ich mehrfach die AWS-Dokumentation konsultieren. Positiv überrascht hat mich, wie einfach die Rekognition-API zu verwenden ist. Für ein nächstes Projekt würde ich früher mit dem Testen beginnen und die Fehlerbehandlung von Anfang an miteinplanen.
+
+### Joel Mazurek
+
+Die Arbeit mit Lambda und S3 war lehrreich. Besonders das Verstehen des Event-Flows (S3 → Lambda → Rekognition → S3) hat mir den Cloud-Gedanken näherbgebracht. Als Verbesserung für ein nächstes Projekt würde ich die Infrastruktur von Anfang an als Code (IaC) definieren, damit die Konfiguration noch nachvollziehbarer ist.
+
+### Nazar Tobilevych
+
+*(Bitte persönliche Reflexion hier ergänzen: Was lief gut? Was würdest du beim nächsten Projekt anders machen?)*
+>>>>>>> 24aeced414824484d9324fe232779f54252486bd
 
 ## Quellen
 

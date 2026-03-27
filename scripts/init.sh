@@ -1,36 +1,89 @@
 #!/bin/bash
-# Autor: Lars Hellstern
-# Datum: 24.03.2026
+# ============================================================================
+# Init-Script – FaceRecognition Service
+# Autoren: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
+# Datum:   März 2026
+# Modul:   M346 – Cloudlösungen konzipieren und realisieren
+# Schule:  GBS St. Gallen
+#
+# Beschreibung:
+#   Automatisierte Inbetriebnahme des FaceRecognition-Service im AWS Learner Lab.
+#   Erstellt S3-Buckets, IAM-Rolle, Lambda-Funktion und S3-Trigger.
+#   Kann bedenkenlos mehrfach ausgeführt werden (idempotent).
+#
+# Voraussetzungen:
+#   - AWS CLI installiert und konfiguriert (aws configure)
+#   - Python 3 installiert
+#   - Bash-Shell (Git Bash, WSL oder Linux/macOS Terminal)
+#
+# Verwendung:
+#   chmod +x scripts/init.sh
+#   ./scripts/init.sh
+#
+# Quellen:
+#   - AWS CLI S3: https://docs.aws.amazon.com/cli/latest/reference/s3api/
+#   - AWS CLI Lambda: https://docs.aws.amazon.com/cli/latest/reference/lambda/
+#   - AWS CLI IAM: https://docs.aws.amazon.com/cli/latest/reference/iam/
+# ============================================================================
 
 set -e
 
+# Farbcodes für die Terminal-Ausgabe
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
+
+# Script-Verzeichnis ermitteln und Konfiguration laden
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../config.sh"
 
+# Python-Befehl ermitteln (python3 oder python)
+if command -v python3 &>/dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &>/dev/null; then
+    PYTHON_CMD="python"
+else
+    echo -e "${RED}Fehler: Python ist nicht installiert.${NC}"
+    echo "Bitte installieren Sie Python 3: https://www.python.org/downloads/"
+    exit 1
+fi
+
+echo -e "${BOLD}${BLUE}"
 echo "========================================"
 echo "  FaceRecognition Service - Setup"
 echo "========================================"
+echo -e "${NC}"
+
+# AWS Account-ID abrufen (wird für ARNs benötigt)
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+echo -e "  AWS Account: ${BOLD}${ACCOUNT_ID}${NC}"
 echo ""
 
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-echo "[1/6] Erstelle S3 In-Bucket: $BUCKET_IN"
+# --- Schritt 1: S3 In-Bucket erstellen ---
+echo -e "${YELLOW}[1/6]${NC} Erstelle S3 In-Bucket: ${BOLD}$BUCKET_IN${NC}"
 if aws s3api head-bucket --bucket "$BUCKET_IN" 2>/dev/null; then
-    echo "       Bucket existiert bereits."
+    echo -e "       ${GREEN}✓${NC} Bucket existiert bereits."
 else
     aws s3api create-bucket --bucket "$BUCKET_IN" --region "$REGION"
-    echo "       Bucket erstellt."
+    echo -e "       ${GREEN}✓${NC} Bucket erstellt."
 fi
 
-echo "[2/6] Erstelle S3 Out-Bucket: $BUCKET_OUT"
+# --- Schritt 2: S3 Out-Bucket erstellen ---
+echo -e "${YELLOW}[2/6]${NC} Erstelle S3 Out-Bucket: ${BOLD}$BUCKET_OUT${NC}"
 if aws s3api head-bucket --bucket "$BUCKET_OUT" 2>/dev/null; then
-    echo "       Bucket existiert bereits."
+    echo -e "       ${GREEN}✓${NC} Bucket existiert bereits."
 else
     aws s3api create-bucket --bucket "$BUCKET_OUT" --region "$REGION"
-    echo "       Bucket erstellt."
+    echo -e "       ${GREEN}✓${NC} Bucket erstellt."
 fi
 
-echo "[3/6] Erstelle IAM-Rolle: $LAMBDA_ROLE_NAME"
+# --- Schritt 3: IAM-Rolle erstellen ---
+echo -e "${YELLOW}[3/6]${NC} Erstelle IAM-Rolle: ${BOLD}$LAMBDA_ROLE_NAME${NC}"
+
+# Trust-Policy erlaubt Lambda-Service, diese Rolle anzunehmen
 TRUST_POLICY='{
   "Version": "2012-10-17",
   "Statement": [
@@ -43,43 +96,52 @@ TRUST_POLICY='{
 }'
 
 if aws iam get-role --role-name "$LAMBDA_ROLE_NAME" 2>/dev/null; then
-    echo "       Rolle existiert bereits."
+    echo -e "       ${GREEN}✓${NC} Rolle existiert bereits."
 else
     aws iam create-role \
         --role-name "$LAMBDA_ROLE_NAME" \
         --assume-role-policy-document "$TRUST_POLICY" \
         --output text
-    echo "       Rolle erstellt."
+    echo -e "       ${GREEN}✓${NC} Rolle erstellt."
 fi
 
 ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${LAMBDA_ROLE_NAME}"
 
-echo "[4/6] Weise Berechtigungen zu"
+# --- Schritt 4: Berechtigungen zuweisen ---
+echo -e "${YELLOW}[4/6]${NC} Weise Berechtigungen zu"
+
+# Rekognition: Lese-Zugriff für die Celebrity-Erkennung
 aws iam attach-role-policy \
     --role-name "$LAMBDA_ROLE_NAME" \
     --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionReadOnlyAccess 2>/dev/null || true
 
+# S3: Vollzugriff zum Lesen (In-Bucket) und Schreiben (Out-Bucket)
 aws iam attach-role-policy \
     --role-name "$LAMBDA_ROLE_NAME" \
     --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess 2>/dev/null || true
 
+# CloudWatch Logs: Damit Lambda Logs schreiben kann
 aws iam attach-role-policy \
     --role-name "$LAMBDA_ROLE_NAME" \
     --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole 2>/dev/null || true
 
-echo "       Berechtigungen zugewiesen."
-echo "       Warte 10 Sekunden bis die Rolle aktiv ist..."
+echo -e "       ${GREEN}✓${NC} Berechtigungen zugewiesen."
+echo -e "       Warte 10 Sekunden bis die Rolle aktiv ist..."
 sleep 10
 
-echo "[5/6] Erstelle Lambda-Funktion: $LAMBDA_FUNCTION_NAME"
+# --- Schritt 5: Lambda-Funktion erstellen ---
+echo -e "${YELLOW}[5/6]${NC} Erstelle Lambda-Funktion: ${BOLD}$LAMBDA_FUNCTION_NAME${NC}"
 LAMBDA_DIR="$SCRIPT_DIR/../lambda"
 cd "$LAMBDA_DIR"
-python3 -c "import zipfile; zf = zipfile.ZipFile('lambda_function.zip', mode='w'); zf.write('lambda_function.py')"
 
+# Lambda-Code als ZIP-Datei verpacken (AWS erwartet ein ZIP-Deployment)
+$PYTHON_CMD -c "import zipfile; zf = zipfile.ZipFile('lambda_function.zip', mode='w'); zf.write('lambda_function.py'); zf.close()"
+
+# Umgebungsvariable: Out-Bucket-Name wird der Lambda-Funktion übergeben
 ENV_VARS="{\"Variables\":{\"BUCKET_OUT\":\"${BUCKET_OUT}\"}}"
 
 if aws lambda get-function --function-name "$LAMBDA_FUNCTION_NAME" 2>/dev/null; then
-    echo "       Funktion existiert bereits, aktualisiere Code..."
+    echo -e "       Funktion existiert bereits, aktualisiere Code..."
     aws lambda update-function-code \
         --function-name "$LAMBDA_FUNCTION_NAME" \
         --zip-file fileb://lambda_function.zip \
@@ -89,6 +151,7 @@ if aws lambda get-function --function-name "$LAMBDA_FUNCTION_NAME" 2>/dev/null; 
         --function-name "$LAMBDA_FUNCTION_NAME" \
         --environment "$ENV_VARS" \
         --output text
+    echo -e "       ${GREEN}✓${NC} Lambda-Funktion aktualisiert."
 else
     aws lambda create-function \
         --function-name "$LAMBDA_FUNCTION_NAME" \
@@ -101,17 +164,20 @@ else
         --environment "$ENV_VARS" \
         --region "$REGION" \
         --output text
-    echo "       Lambda-Funktion erstellt."
+    echo -e "       ${GREEN}✓${NC} Lambda-Funktion erstellt."
 fi
 
-rm lambda_function.zip
+# Temporäre ZIP-Datei entfernen
+rm -f lambda_function.zip
 
-echo "       Warte 5 Sekunden bis die Funktion bereit ist..."
+echo -e "       Warte 5 Sekunden bis die Funktion bereit ist..."
 sleep 5
 
-echo "[6/6] Konfiguriere S3-Trigger"
+# --- Schritt 6: S3-Trigger konfigurieren ---
+echo -e "${YELLOW}[6/6]${NC} Konfiguriere S3-Trigger"
 LAMBDA_ARN="arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:${LAMBDA_FUNCTION_NAME}"
 
+# Lambda-Berechtigung: S3 darf die Lambda-Funktion aufrufen
 aws lambda add-permission \
     --function-name "$LAMBDA_FUNCTION_NAME" \
     --statement-id "s3-trigger" \
@@ -120,6 +186,7 @@ aws lambda add-permission \
     --source-arn "arn:aws:s3:::${BUCKET_IN}" \
     --source-account "$ACCOUNT_ID" 2>/dev/null || true
 
+# S3-Benachrichtigungskonfiguration: Trigger bei Upload von .jpg, .jpeg, .png
 NOTIFICATION_CONFIG="{
   \"LambdaFunctionConfigurations\": [
     {
@@ -162,21 +229,23 @@ aws s3api put-bucket-notification-configuration \
     --bucket "$BUCKET_IN" \
     --notification-configuration "$NOTIFICATION_CONFIG"
 
-echo "       S3-Trigger konfiguriert."
+echo -e "       ${GREEN}✓${NC} S3-Trigger konfiguriert."
 
+# --- Zusammenfassung ---
 echo ""
+echo -e "${BOLD}${GREEN}"
 echo "========================================"
-echo "  Setup abgeschlossen"
+echo "  ✓ Setup abgeschlossen"
 echo "========================================"
+echo -e "${NC}"
+echo -e "  ${BOLD}Komponenten:${NC}"
+echo -e "    In-Bucket:       ${GREEN}$BUCKET_IN${NC}"
+echo -e "    Out-Bucket:      ${GREEN}$BUCKET_OUT${NC}"
+echo -e "    Lambda-Funktion: ${GREEN}$LAMBDA_FUNCTION_NAME${NC}"
+echo -e "    IAM-Rolle:       ${GREEN}$LAMBDA_ROLE_NAME${NC}"
+echo -e "    Region:          ${GREEN}$REGION${NC}"
 echo ""
-echo "  Komponenten:"
-echo "    In-Bucket:       $BUCKET_IN"
-echo "    Out-Bucket:      $BUCKET_OUT"
-echo "    Lambda-Funktion: $LAMBDA_FUNCTION_NAME"
-echo "    IAM-Rolle:       $LAMBDA_ROLE_NAME"
-echo "    Region:          $REGION"
-echo ""
-echo "  Verwendung:"
-echo "    Laden Sie ein Foto in den In-Bucket hoch:"
-echo "    aws s3 cp foto.jpg s3://$BUCKET_IN/"
+echo -e "  ${BOLD}Verwendung:${NC}"
+echo -e "    Foto hochladen:  ${BLUE}aws s3 cp foto.jpg s3://$BUCKET_IN/${NC}"
+echo -e "    Test ausführen:  ${BLUE}./scripts/test.sh testbilder/foto.jpg${NC}"
 echo ""

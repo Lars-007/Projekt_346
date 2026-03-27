@@ -1,6 +1,26 @@
 #!/bin/bash
+# ============================================================================
+# Konfigurationsdatei – FaceRecognition Service
+# Autoren: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
+# Datum:   März 2026
+# Modul:   M346 – Cloudlösungen konzipieren und realisieren
+# Schule:  GBS St. Gallen
+#
+# Beschreibung:
+#   Zentrale Konfigurationsdatei für alle Scripts (init.sh, test.sh, cleanup.sh).
+#   Hier werden die Namen der AWS-Komponenten definiert. Änderungen an den
+#   Komponentennamen müssen nur hier vorgenommen werden.
+# ============================================================================
+
+# S3-Buckets
 BUCKET_IN="facerecognition-in-bucket"
 BUCKET_OUT="facerecognition-out-bucket"
+
+# Lambda-Funktion
 LAMBDA_FUNCTION_NAME="facerecognition-lambda"
+
+# IAM-Rolle für die Lambda-Funktion
 LAMBDA_ROLE_NAME="facerecognition-lambda-role"
+
+# AWS Region (Learner Lab nutzt us-east-1)
 REGION="us-east-1"

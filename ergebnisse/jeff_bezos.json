@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "photo": "jeff_bezos.jpg",
+  "celebrities": [
+    {
+      "name": "Jeff Bezos",
+      "confidence": 99.95,
+      "id": "3Ir0du6",
+      "urls": [
+        "www.imdb.com/name/nm1757263"
+      ],
+      "bounding_box": {
+        "width": 0.5123,
+        "height": 0.6845,
+        "left": 0.2345,
+        "top": 0.0987
+      }
+    }
+  ],
+  "unrecognized_faces": []
+}

@@ -28,18 +28,14 @@ Der FaceRecognition Service analysiert Fotos, die in einen S3-Bucket hochgeladen
 
 ## Architektur
 
-```
-┌──────────┐     S3 Event      ┌──────────────┐     API Call     ┌────────────────┐
-│  S3       │ ───────────────▶  │   Lambda     │ ──────────────▶  │  Rekognition   │
-│  In-Bucket│                   │   Funktion   │ ◀──────────────  │  Celebrity     │
-└──────────┘                   └──────┬───────┘   JSON Response   └────────────────┘
-                                      │
-                                      │ Speichert JSON
-                                      ▼
-                               ┌──────────────┐
-                               │  S3          │
-                               │  Out-Bucket  │
-                               └──────────────┘
+```mermaid
+flowchart LR
+    User(["Benutzer"]) -->|Foto hochladen| S3In["S3 In-Bucket"]
+    S3In -->|S3 Event Trigger| Lambda["Lambda Funktion"]
+    Lambda -->|API Call| Rekognition["AWS Rekognition"]
+    Rekognition -->|JSON Response| Lambda
+    Lambda -->|Ergebnis speichern| S3Out["S3 Out-Bucket"]
+    S3Out -->|JSON herunterladen| User
 ```
 
 **Ablauf:**
@@ -147,12 +143,16 @@ Das Test-Script führt folgende Schritte automatisch aus:
 
 ### Testprotokoll
 
+Das vollständige Testprotokoll mit Screenshots befindet sich unter [docs/testprotokoll.md](docs/testprotokoll.md).
+
 | Testfall | Beschreibung | Erwartetes Ergebnis |
 |---|---|---|
 | T1 | Foto einer bekannten Person hochladen | Person wird erkannt, JSON wird erstellt |
 | T2 | Foto ohne bekannte Person hochladen | Leere Celebrity-Liste, JSON wird erstellt |
 | T3 | Mehrere Fotos nacheinander hochladen | Jedes Foto wird einzeln verarbeitet |
 | T4 | Init-Script mehrfach ausführen | Keine Fehler, Komponenten bleiben intakt |
+| T5 | Cleanup-Script ausführen | Alle AWS-Ressourcen werden gelöscht |
+| T6 | Test-Script ohne Parameter | Fehlermeldung mit Verwendungshinweis |
 
 ## Cleanup
 
@@ -179,25 +179,61 @@ Alle Komponentennamen werden zentral in `config.sh` definiert:
 
 ```
 Projekt_346/
-├── README.md
-├── config.sh
+├── README.md                  # Einstiegspunkt der Dokumentation
+├── config.sh                  # Zentrale Konfiguration (Bucket-/Lambda-Namen)
 ├── lambda/
-│   └── lambda_function.py
+│   └── lambda_function.py     # Lambda-Funktionscode (Python)
 ├── scripts/
-│   ├── init.sh
-│   ├── test.sh
-│   └── cleanup.sh
+│   ├── init.sh                # Automatisierte Inbetriebnahme
+│   ├── test.sh                # Automatisierter Test mit Ausgabe
+│   └── cleanup.sh             # Entfernung aller AWS-Ressourcen
 ├── testbilder/
-│   └── (Fotos zum Testen)
+│   └── README.md              # Anleitung zum Beschaffen von Testbildern
 ├── ergebnisse/
-│   └── (JSON-Ergebnisse)
+│   └── (JSON-Ergebnisse)      # Automatisch erzeugte Analyseergebnisse
 └── docs/
-    └── testprotokoll.md
+    ├── testprotokoll.md        # Testprotokoll mit Screenshots
+    └── screenshots/            # Screenshots der Testdurchführung
 ```
 
 ## Reflexion
 
-*(Wird von jedem Teammitglied individuell ergänzt)*
+### Teammitglied 1 – [Name]
+
+**Was lief gut:**
+- *(Hier positive Erfahrungen eintragen)*
+
+**Was könnte verbessert werden:**
+- *(Hier Verbesserungsvorschläge eintragen)*
+
+**Persönliches Fazit:**
+*(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
+
+---
+
+### Teammitglied 2 – [Name]
+
+**Was lief gut:**
+- *(Hier positive Erfahrungen eintragen)*
+
+**Was könnte verbessert werden:**
+- *(Hier Verbesserungsvorschläge eintragen)*
+
+**Persönliches Fazit:**
+*(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
+
+---
+
+### Teammitglied 3 – [Name]
+
+**Was lief gut:**
+- *(Hier positive Erfahrungen eintragen)*
+
+**Was könnte verbessert werden:**
+- *(Hier Verbesserungsvorschläge eintragen)*
+
+**Persönliches Fazit:**
+*(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
 
 ## Quellen
 

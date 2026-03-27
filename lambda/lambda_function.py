@@ -2,8 +2,12 @@
 # Autor: Lars Hellstern
 # Datum: 24.03.2026
 # Quelle: https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html
+# Beschreibung: Lambda-Funktion zur Erkennung bekannter Persoenlichkeiten
+#               auf Fotos mittels AWS Rekognition. Wird durch einen S3-Event
+#               ausgeloest und speichert die Ergebnisse als JSON im Out-Bucket.
 
 import json
+import os
 import boto3
 import urllib.parse
 
@@ -15,7 +19,8 @@ def lambda_handler(event, context):
     bucket_in = event["Records"][0]["s3"]["bucket"]["name"]
     key = urllib.parse.unquote_plus(event["Records"][0]["s3"]["object"]["key"])
 
-    bucket_out = bucket_in.replace("-in-", "-out-")
+    # Out-Bucket aus Umgebungsvariable lesen (Fallback: String-Ersetzung)
+    bucket_out = os.environ.get("BUCKET_OUT", bucket_in.replace("-in-", "-out-"))
 
     response = rekognition.recognize_celebrities(
         Image={"S3Object": {"Bucket": bucket_in, "Name": key}}

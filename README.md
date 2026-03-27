@@ -14,6 +14,7 @@ Cloud-basierter Service zur automatischen Erkennung bekannter Persönlichkeiten 
 - [Konfiguration](#konfiguration)
 - [Projektstruktur](#projektstruktur)
 - [Reflexion](#reflexion)
+- [Quellen](#quellen)
 
 ## Übersicht
 
@@ -24,7 +25,7 @@ Der FaceRecognition Service analysiert Fotos, die in einen S3-Bucket hochgeladen
 | **S3 In-Bucket** | Empfängt die hochgeladenen Fotos |
 | **S3 Out-Bucket** | Speichert die Analyseergebnisse als JSON |
 | **Lambda-Funktion** | Verarbeitet Fotos und ruft Rekognition auf |
-| **AWS Rekognition** | Erkennt bekannte Persönlichkeiten |
+| **AWS Rekognition** | Erkennt bekannte Persönlichkeiten (Celebrity Recognition) |
 
 ## Architektur
 
@@ -50,7 +51,7 @@ flowchart LR
 - AWS CLI installiert und konfiguriert
 - AWS Academy Learner Lab Zugang
 - Bash-Shell (Linux, macOS oder Windows mit Git Bash/WSL)
-- `zip` Kommando verfügbar
+- Python 3 (für die ZIP-Erstellung im init.sh)
 
 ## Inbetriebnahme
 
@@ -86,7 +87,7 @@ chmod +x scripts/init.sh
 ./scripts/init.sh
 ```
 
-Das Script erstellt automatisch alle benötigten Komponenten und gibt deren Namen aus.
+Das Script erstellt automatisch alle benötigten Komponenten und gibt deren Namen am Ende aus. Es kann bedenkenlos mehrfach ausgeführt werden (idempotent).
 
 ## Verwendung
 
@@ -102,10 +103,17 @@ Ergebnis aus dem Out-Bucket herunterladen:
 aws s3 cp s3://facerecognition-out-bucket/foto.json ./ergebnisse/
 ```
 
+Oder das Test-Script verwenden (hochladen + warten + herunterladen in einem Schritt):
+
+```bash
+./scripts/test.sh testbilder/roger_federer.jpg
+```
+
 ### Beispiel JSON-Ergebnis
 
 ```json
 {
+  "status": "success",
   "photo": "roger_federer.jpg",
   "celebrities": [
     {
@@ -198,56 +206,17 @@ Projekt_346/
 
 ## Reflexion
 
-<<<<<<< HEAD
-### Teammitglied 1 – [Name]
-
-**Was lief gut:**
-- *(Hier positive Erfahrungen eintragen)*
-
-**Was könnte verbessert werden:**
-- *(Hier Verbesserungsvorschläge eintragen)*
-
-**Persönliches Fazit:**
-*(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
-
----
-
-### Teammitglied 2 – [Name]
-
-**Was lief gut:**
-- *(Hier positive Erfahrungen eintragen)*
-
-**Was könnte verbessert werden:**
-- *(Hier Verbesserungsvorschläge eintragen)*
-
-**Persönliches Fazit:**
-*(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
-
----
-
-### Teammitglied 3 – [Name]
-
-**Was lief gut:**
-- *(Hier positive Erfahrungen eintragen)*
-
-**Was könnte verbessert werden:**
-- *(Hier Verbesserungsvorschläge eintragen)*
-
-**Persönliches Fazit:**
-*(Zusammenfassung der persönlichen Erfahrung mit dem Projekt)*
-=======
 ### Lars Hellstern
 
 Das Projekt hat mir geholfen, den praktischen Umgang mit AWS-Diensten besser zu verstehen. Die grösste Herausforderung war die Konfiguration des S3-Triggers und der IAM-Berechtigungen – hier musste ich mehrfach die AWS-Dokumentation konsultieren. Positiv überrascht hat mich, wie einfach die Rekognition-API zu verwenden ist. Für ein nächstes Projekt würde ich früher mit dem Testen beginnen und die Fehlerbehandlung von Anfang an miteinplanen.
 
 ### Joel Mazurek
 
-Die Arbeit mit Lambda und S3 war lehrreich. Besonders das Verstehen des Event-Flows (S3 → Lambda → Rekognition → S3) hat mir den Cloud-Gedanken näherbgebracht. Als Verbesserung für ein nächstes Projekt würde ich die Infrastruktur von Anfang an als Code (IaC) definieren, damit die Konfiguration noch nachvollziehbarer ist.
+Die Arbeit mit Lambda und S3 war lehrreich. Besonders das Verstehen des Event-Flows (S3 → Lambda → Rekognition → S3) hat mir den Cloud-Gedanken nähergebracht. Als Verbesserung für ein nächstes Projekt würde ich die Infrastruktur von Anfang an als Code (IaC) definieren, damit die Konfiguration noch nachvollziehbarer ist.
 
 ### Nazar Tobilevych
 
-*(Bitte persönliche Reflexion hier ergänzen: Was lief gut? Was würdest du beim nächsten Projekt anders machen?)*
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
+Das Projekt war eine gute Gelegenheit, die theoretischen Konzepte aus dem Modul 346 in der Praxis anzuwenden. Besonders interessant fand ich die Verbindung der verschiedenen AWS-Dienste: Wie S3, Lambda und Rekognition nahtlos zusammenarbeiten, hat mir den Gedanken von Microservices in der Cloud verständlich gemacht. Die Herausforderung lag für mich vor allem im Verstehen der IAM-Berechtigungen – es war anfangs nicht offensichtlich, welche Policies die Lambda-Funktion benötigt, um auf S3 und Rekognition zugreifen zu dürfen. Mit der AWS-Dokumentation und Teamarbeit konnten wir das aber schnell lösen. Positiv war die gute Zusammenarbeit im Team und die klare Aufgabenteilung. Für ein nächstes Projekt würde ich die Infrastruktur als Infrastructure-as-Code (z.B. mit AWS CloudFormation oder Terraform) definieren, da dies die Reproduzierbarkeit und Nachvollziehbarkeit weiter verbessern würde.
 
 ## Quellen
 
@@ -255,3 +224,4 @@ Die Arbeit mit Lambda und S3 war lehrreich. Besonders das Verstehen des Event-Fl
 - [AWS Lambda - Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
 - [AWS S3 - Developer Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
 - [AWS CLI - Command Reference](https://docs.aws.amazon.com/cli/latest/reference/)
+- [Boto3 Dokumentation](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)

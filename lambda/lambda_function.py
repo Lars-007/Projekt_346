@@ -1,14 +1,26 @@
-<<<<<<< HEAD
 # lambda_function.py
-# Autor: Lars Hellstern
-# Datum: 24.03.2026
-# Quelle: https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html
-# Beschreibung: Lambda-Funktion zur Erkennung bekannter Persoenlichkeiten
-#               auf Fotos mittels AWS Rekognition. Wird durch einen S3-Event
-#               ausgeloest und speichert die Ergebnisse als JSON im Out-Bucket.
+# Autoren: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
+# Datum:   März 2026
+# Modul:   M346 – Cloudlösungen konzipieren und realisieren
+# Schule:  Gewerbliches Berufs- und Weiterbildungszentrum St. Gallen (GBS)
+#
+# Beschreibung:
+#   Lambda-Funktion zur Erkennung bekannter Persönlichkeiten auf Fotos
+#   mittels AWS Rekognition Celebrity Recognition API.
+#   Wird durch einen S3-Event ausgelöst, wenn eine Bilddatei in den
+#   In-Bucket hochgeladen wird. Das Ergebnis wird als JSON im Out-Bucket
+#   gespeichert.
+#
+# Quellen:
+#   - AWS Rekognition Celebrity Recognition:
+#     https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html
+#   - AWS Lambda Developer Guide:
+#     https://docs.aws.amazon.com/lambda/latest/dg/welcome.html
+#   - Boto3 Rekognition Dokumentation:
+#     https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rekognition.html
+#   - S3 Event Notifications:
+#     https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html
 
-=======
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
 import json
 import os
 import boto3
@@ -27,13 +39,11 @@ rekognition = boto3.client("rekognition")
 def lambda_handler(event, context):
     """
     Hauptfunktion der Lambda: Wird ausgelöst, wenn ein Foto in den In-Bucket hochgeladen wird.
+    Ruft die AWS Rekognition Celebrity Recognition API auf und speichert das
+    JSON-Ergebnis im Out-Bucket.
     """
     logger.info(f"Event erhalten: {json.dumps(event)}")
 
-<<<<<<< HEAD
-    # Out-Bucket aus Umgebungsvariable lesen (Fallback: String-Ersetzung)
-    bucket_out = os.environ.get("BUCKET_OUT", bucket_in.replace("-in-", "-out-"))
-=======
     try:
         # Bucket-Name und Dateikey aus dem S3-Event extrahieren
         # URL-Encoding auflösen (z.B. Leerzeichen im Dateinamen)
@@ -41,16 +51,15 @@ def lambda_handler(event, context):
         if not records:
             logger.warning("Keine Records im Event gefunden.")
             return {"statusCode": 400, "body": "Keine S3-Records im Event."}
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
 
         bucket_in = records[0]["s3"]["bucket"]["name"]
         key = urllib.parse.unquote_plus(records[0]["s3"]["object"]["key"])
 
         logger.info(f"Verarbeite Datei {key} aus Bucket {bucket_in}")
 
-        # Out-Bucket-Namen ableiten: "-in-" wird durch "-out-" ersetzt
-        # Konvention: In-Bucket heisst "...-in-...", Out-Bucket "...-out-..."
-        bucket_out = bucket_in.replace("-in-", "-out-")
+        # Out-Bucket aus Umgebungsvariable lesen (Fallback: String-Ersetzung)
+        # Die Umgebungsvariable BUCKET_OUT wird im init.sh gesetzt.
+        bucket_out = os.environ.get("BUCKET_OUT", bucket_in.replace("-in-", "-out-"))
 
         # AWS Rekognition Celebrity Recognition API aufrufen
         response = rekognition.recognize_celebrities(
@@ -102,4 +111,3 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": json.dumps({"status": "error", "message": str(e)}),
         }
-

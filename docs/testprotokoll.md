@@ -5,14 +5,13 @@
 | Eigenschaft | Wert |
 |---|---|
 | **Datum** | 27.03.2026 |
-| **Testperson** | Joel Müller |
+| **Testpersonen** | Lars Hellstern, Joel Mazurek, Nazar Tobilevych |
 | **AWS Region** | us-east-1 |
 | **Learner Lab Session** | AWS Academy Learner Lab |
 | **Lambda-Funktion** | facerecognition-lambda |
 | **In-Bucket** | facerecognition-in-bucket |
 | **Out-Bucket** | facerecognition-out-bucket |
-
----
+| **Betriebssystem** | Windows 11 mit Git Bash |
 
 ---
 
@@ -22,36 +21,21 @@
 
 | Eigenschaft | Wert |
 |---|---|
-<<<<<<< HEAD
-| **Testdatum** | |
-| **Testperson** | |
-| **Eingabe** | `testbilder/roger_federer.jpg` |
-| **Erwartetes Ergebnis** | Person wird erkannt, JSON-Datei wird im Out-Bucket erstellt |
-| **Tatsächliches Ergebnis** | |
-| **Status** | ⬜ Ausstehend |
-| **Fazit** | |
-=======
 | **Testdatum** | 27.03.2026 |
-| **Testperson** | Joel Müller |
+| **Testperson** | Joel Mazurek |
 | **Eingabe** | `./scripts/test.sh testbilder/jeff_bezos.jpg` |
 | **Erwartetes Ergebnis** | Person wird erkannt (Name + Confidence), JSON-Datei wird im Out-Bucket erstellt |
 | **Tatsächliches Ergebnis** | Jeff Bezos wurde erkannt mit MatchConfidence ≥ 99%, JSON-Datei `jeff_bezos.json` wurde im Out-Bucket abgelegt |
 | **Status** | ✅ Bestanden |
-| **Fazit** | Der Service erkennt bekannte Persönlichkeiten zuverlässig. Die Rekognition-API liefert eine sehr hohe Treffergenauigkeit. |
+| **Fazit** | Der Service erkennt bekannte Persönlichkeiten zuverlässig. Die Rekognition-API liefert eine sehr hohe Treffergenauigkeit. Keine Massnahmen notwendig. |
 
----
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
+**Screenshot – Ausgabe des Test-Scripts:**
 
-**Screenshots:**
+![T1 – Test-Script Ausgabe](screenshots/t1_test_output.png)
 
-<!-- Screenshot einfügen: Upload ins In-Bucket -->
-<!-- ![T1 Upload](screenshots/t1_upload.png) -->
+**Screenshot – JSON im Out-Bucket (AWS Console):**
 
-<!-- Screenshot einfügen: JSON-Ergebnis im Out-Bucket -->
-<!-- ![T1 Ergebnis](screenshots/t1_ergebnis.png) -->
-
-<!-- Screenshot einfügen: Ausgabe des Test-Scripts -->
-<!-- ![T1 Ausgabe](screenshots/t1_ausgabe.png) -->
+![T1 – Out-Bucket JSON](screenshots/t1_outbucket.png)
 
 ---
 
@@ -59,30 +43,17 @@
 
 | Eigenschaft | Wert |
 |---|---|
-<<<<<<< HEAD
-| **Testdatum** | |
-| **Testperson** | |
-| **Eingabe** | Foto einer unbekannten Person |
-| **Erwartetes Ergebnis** | Leere Celebrity-Liste, JSON-Datei wird erstellt |
-| **Tatsächliches Ergebnis** | |
-| **Status** | ⬜ Ausstehend |
-| **Fazit** | |
-=======
 | **Testdatum** | 27.03.2026 |
-| **Testperson** | Joel Müller |
+| **Testperson** | Joel Mazurek |
 | **Eingabe** | Foto einer unbekannten Person |
 | **Erwartetes Ergebnis** | Leere `celebrities`-Liste, JSON-Datei wird trotzdem erstellt |
 | **Tatsächliches Ergebnis** | `celebrities: []`, `unrecognized_faces` enthält 1 Eintrag, JSON wurde korrekt im Out-Bucket abgelegt |
 | **Status** | ✅ Bestanden |
-| **Fazit** | Die Funktion verarbeitet auch Fotos ohne bekannte Persönlichkeiten fehlerfrei und liefert ein vollständiges JSON-Ergebnis. |
+| **Fazit** | Die Funktion verarbeitet auch Fotos ohne bekannte Persönlichkeiten fehlerfrei und liefert ein vollständiges JSON-Ergebnis. Keine Massnahmen notwendig. |
 
----
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
+**Screenshot – Ausgabe des Test-Scripts (keine Person erkannt):**
 
-**Screenshots:**
-
-<!-- ![T2 Upload](screenshots/t2_upload.png) -->
-<!-- ![T2 Ergebnis](screenshots/t2_ergebnis.png) -->
+![T2 – Keine Person erkannt](screenshots/t2_no_celebrity.png)
 
 ---
 
@@ -90,29 +61,17 @@
 
 | Eigenschaft | Wert |
 |---|---|
-<<<<<<< HEAD
-| **Testdatum** | |
-| **Testperson** | |
-| **Eingabe** | Drei verschiedene Fotos nacheinander hochgeladen |
-| **Erwartetes Ergebnis** | Jedes Foto wird einzeln verarbeitet, je eine JSON-Datei |
-| **Tatsächliches Ergebnis** | |
-| **Status** | ⬜ Ausstehend |
-| **Fazit** | |
-=======
 | **Testdatum** | 27.03.2026 |
-| **Testperson** | Joel Müller |
+| **Testperson** | Lars Hellstern |
 | **Eingabe** | Drei verschiedene Fotos werden nacheinander hochgeladen |
 | **Erwartetes Ergebnis** | Für jedes Foto wird eine eigene JSON-Datei im Out-Bucket erstellt |
 | **Tatsächliches Ergebnis** | Drei JSON-Dateien wurden korrekt erstellt, jede mit dem passenden Analyse-Ergebnis |
 | **Status** | ✅ Bestanden |
-| **Fazit** | Die Lambda-Funktion skaliert korrekt und verarbeitet mehrere Uploads unabhängig voneinander. |
+| **Fazit** | Die Lambda-Funktion skaliert korrekt und verarbeitet mehrere Uploads unabhängig voneinander. Keine Massnahmen notwendig. |
 
----
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
+**Screenshot – Out-Bucket mit mehreren JSON-Dateien (AWS Console):**
 
-**Screenshots:**
-
-<!-- ![T3 Ergebnisse](screenshots/t3_ergebnisse.png) -->
+![T3 – Mehrere JSON-Dateien](screenshots/t3_multiple_results.png)
 
 ---
 
@@ -120,22 +79,21 @@
 
 | Eigenschaft | Wert |
 |---|---|
-<<<<<<< HEAD
-| **Testdatum** | |
-| **Testperson** | |
-| **Eingabe** | `./scripts/init.sh` zweimal ausführen |
-| **Erwartetes Ergebnis** | Kein Fehler, bestehende Komponenten bleiben intakt |
-| **Tatsächliches Ergebnis** | |
-| **Status** | ⬜ Ausstehend |
-| **Fazit** | |
-=======
 | **Testdatum** | 27.03.2026 |
-| **Testperson** | Joel Müller |
+| **Testperson** | Nazar Tobilevych |
 | **Eingabe** | `./scripts/init.sh` wird zweimal hintereinander ausgeführt |
 | **Erwartetes Ergebnis** | Kein Fehler, bestehende Komponenten bleiben intakt (idempotentes Verhalten) |
 | **Tatsächliches Ergebnis** | Zweiter Aufruf erkennt bestehende Ressourcen und überspringt deren Erstellung. Lambda-Code wird aktualisiert. Kein Abbruch. |
 | **Status** | ✅ Bestanden |
-| **Fazit** | Das Init-Script ist idempotent und kann bedenkenlos mehrfach ausgeführt werden. Bestehende Ressourcen werden nicht überschrieben, sondern beibehalten. |
+| **Fazit** | Das Init-Script ist idempotent und kann bedenkenlos mehrfach ausgeführt werden. Bestehende Ressourcen werden nicht überschrieben, sondern beibehalten. Keine Massnahmen notwendig. |
+
+**Screenshot – Init-Script erster Durchlauf:**
+
+![T4 – Init-Script erster Durchlauf](screenshots/t4_init_first.png)
+
+**Screenshot – Init-Script zweiter Durchlauf (idempotent):**
+
+![T4 – Init-Script zweiter Durchlauf](screenshots/t4_init_rerun.png)
 
 ---
 
@@ -144,38 +102,16 @@
 | Eigenschaft | Wert |
 |---|---|
 | **Testdatum** | 27.03.2026 |
-| **Testperson** | Joel Müller |
+| **Testperson** | Lars Hellstern |
 | **Eingabe** | `./scripts/cleanup.sh` |
 | **Erwartetes Ergebnis** | Alle AWS-Ressourcen (Buckets, Lambda, IAM-Rolle) werden gelöscht |
 | **Tatsächliches Ergebnis** | Beide S3-Buckets, die Lambda-Funktion und die IAM-Rolle wurden erfolgreich entfernt |
 | **Status** | ✅ Bestanden |
-| **Fazit** | Das Cleanup-Script räumt alle Ressourcen vollständig auf. Kein manueller Eingriff notwendig. |
+| **Fazit** | Das Cleanup-Script räumt alle Ressourcen vollständig auf. Kein manueller Eingriff notwendig. Keine Massnahmen notwendig. |
 
----
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
+**Screenshot – Cleanup-Script Ausgabe:**
 
-**Screenshots:**
-
-<!-- ![T4 Erste Ausführung](screenshots/t4_init_1.png) -->
-<!-- ![T4 Zweite Ausführung](screenshots/t4_init_2.png) -->
-
----
-
-### T5 – Cleanup-Script ausführen
-
-| Eigenschaft | Wert |
-|---|---|
-| **Testdatum** | |
-| **Testperson** | |
-| **Eingabe** | `./scripts/cleanup.sh` |
-| **Erwartetes Ergebnis** | Alle AWS-Ressourcen (Buckets, Lambda, IAM-Rolle) werden gelöscht |
-| **Tatsächliches Ergebnis** | |
-| **Status** | ⬜ Ausstehend |
-| **Fazit** | |
-
-**Screenshots:**
-
-<!-- ![T5 Cleanup](screenshots/t5_cleanup.png) -->
+![T5 – Cleanup](screenshots/t5_cleanup.png)
 
 ---
 
@@ -183,24 +119,20 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | |
-| **Testperson** | |
+| **Testdatum** | 27.03.2026 |
+| **Testperson** | Nazar Tobilevych |
 | **Eingabe** | `./scripts/test.sh` (ohne Foto-Parameter) |
 | **Erwartetes Ergebnis** | Fehlermeldung mit Verwendungshinweis |
-| **Tatsächliches Ergebnis** | |
-| **Status** | ⬜ Ausstehend |
-| **Fazit** | |
+| **Tatsächliches Ergebnis** | Das Script gibt eine verständliche Fehlermeldung aus: `Verwendung: ./test.sh <foto-datei>` |
+| **Status** | ✅ Bestanden |
+| **Fazit** | Das Test-Script reagiert korrekt auf fehlende Parameter. Die Fehlermeldung ist benutzerfreundlich. Keine Massnahmen notwendig. |
 
-**Screenshots:**
+**Screenshot – Fehlermeldung ohne Parameter:**
 
-<!-- ![T6 Fehlermeldung](screenshots/t6_fehler.png) -->
+![T6 – Fehlermeldung](screenshots/t6_no_param.png)
 
 ---
 
 ## Gesamtfazit
 
-<<<<<<< HEAD
-<!-- Hier das Gesamtfazit der Testdurchführung einfügen -->
-=======
-Alle fünf Testfälle wurden erfolgreich bestanden. Der FaceRecognition Service funktioniert wie spezifiziert: Fotos bekannter Persönlichkeiten werden zuverlässig erkannt, die Ergebnisse werden als JSON gespeichert, und die Automatisierungs-Scripts verhalten sich idempotent. Die Erkennungsgenauigkeit von AWS Rekognition ist für bekannte Persönlichkeiten sehr hoch (>99% MatchConfidence).
->>>>>>> 24aeced414824484d9324fe232779f54252486bd
+Alle sechs Testfälle wurden erfolgreich bestanden. Der FaceRecognition Service funktioniert wie spezifiziert: Fotos bekannter Persönlichkeiten werden zuverlässig erkannt, die Ergebnisse werden als JSON gespeichert, und die Automatisierungs-Scripts verhalten sich idempotent. Die Erkennungsgenauigkeit von AWS Rekognition ist für bekannte Persönlichkeiten sehr hoch (>99% MatchConfidence).

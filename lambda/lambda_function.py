@@ -1,5 +1,5 @@
 # lambda_function.py
-# Autor: Lars Hellstern, Joel Müller, [Dritter Teamname]
+# Autor: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
 # Datum: 24.03.2026
 # Quelle: https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html
 # Beschreibung: AWS Lambda-Funktion zur Erkennung bekannter Persönlichkeiten auf Fotos

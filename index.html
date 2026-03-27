@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceRecognition | Service Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-face-viewfinder"></i>
+                </div>
+                <div>
+                    <h1>FaceRecognition</h1>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Cloud-basierter Service | M346 Project</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                Service Active (Simulation)
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Architecture Flow -->
+            <div class="card architecture-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    Architecture & Data Flow
+                </div>
+                <div class="arch-visual">
+                    <div class="node">
+                        <div class="node-icon"><i class="fa-solid fa-user"></i></div>
+                        <span class="node-label">Benutzer</span>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="node">
+                        <div class="node-icon" style="color: #FF9900;"><i class="fa-brands fa-aws"></i></div>
+                        <span class="node-label">S3 In</span>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="node">
+                        <div class="node-icon" style="color: #FF9900;"><i class="fa-solid fa-bolt"></i></div>
+                        <span class="node-label">Lambda</span>
+                    </div>
+                    <div class="connector"></div>
+                    <div class="node" style="margin-top: -60px;">
+                        <div class="node-icon" style="color: #FF9900;"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <span class="node-label">Rekognition</span>
+                    </div>
+                    <div class="connector" style="position: absolute; width: 2px; height: 60px; right: 236px; top: 110px; background: linear-gradient(180deg, var(--primary), transparent);"></div>
+                    <div class="connector"></div>
+                    <div class="node">
+                        <div class="node-icon" style="color: #FF9900;"><i class="fa-brands fa-aws"></i></div>
+                        <span class="node-label">S3 Out</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 1rem;">
+                    Der S3 Event-Trigger startet die Lambda-Funktion, welche AWS Rekognition zur Celebrity-Erkennung nutzt und die Resultate speichert.
+                </p>
+            </div>
+
+            <!-- Resource Monitor -->
+            <div class="card resources-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-server"></i>
+                    Cloud Resources
+                </div>
+                <div class="resource-list">
+                    <div class="resource-item">
+                        <div class="resource-info">
+                            <i class="fa-solid fa-box-archive res-icon"></i>
+                            <span class="res-name">S3 In-Bucket</span>
+                        </div>
+                        <span class="res-status">facerecognition-in-bucket</span>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-info">
+                            <i class="fa-solid fa-box-open res-icon"></i>
+                            <span class="res-name">S3 Out-Bucket</span>
+                        </div>
+                        <span class="res-status">facerecognition-out-bucket</span>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-info">
+                            <i class="fa-solid fa-code res-icon"></i>
+                            <span class="res-name">Lambda Function</span>
+                        </div>
+                        <span class="res-status">facerecognition-lambda</span>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-info">
+                            <i class="fa-solid fa-shield-halved res-icon"></i>
+                            <span class="res-name">IAM Role</span>
+                        </div>
+                        <span class="res-status">facerecognition-lambda-role</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Explorer -->
+            <div class="card code-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-terminal"></i>
+                    Core Backend Logic (lambda_handler)
+                </div>
+                <div class="code-container">
+<span class="code-keyword">def</span> <span class="code-func">lambda_handler</span>(event, context):
+    <span class="code-comment"># Bucket-Name und Dateikey aus dem S3-Event extrahieren</span>
+    records = event.get(<span class="code-string">"Records"</span>, [])
+    bucket_in = records[<span class="code-number">0</span>][<span class="code-string">"s3"</span>][<span class="code-string">"bucket"</span>][<span class="code-string">"name"</span>]
+    key = urllib.parse.unquote_plus(records[<span class="code-number">0</span>][<span class="code-string">"s3"</span>][<span class="code-string">"object"</span>][<span class="code-string">"key"</span>])
+
+    <span class="code-comment"># AWS Rekognition Celebrity Recognition API aufrufen</span>
+    response = rekognition.recognize_celebrities(
+        Image={<span class="code-string">"S3Object"</span>: {<span class="code-string">"Bucket"</span>: bucket_in, <span class="code-string">"Name"</span>: key}}
+    )
+
+    <span class="code-comment"># Speichere Ergebnis in Out-Bucket</span>
+    s3.put_object(
+        Bucket=bucket_out,
+        Key=output_key,
+        Body=json.dumps(result, indent=<span class="code-number">2</span>),
+        ContentType=<span class="code-string">"application/json"</span>
+    )</div>
+            </div>
+
+            <!-- Docs Viewer -->
+            <div class="card docs-card">
+                <div class="card-title">
+                    <i class="fa-solid fa-book"></i>
+                    Project Documentation
+                </div>
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('readme')">README.md</div>
+                    <div class="tab" id="tab-test" onclick="switchTab('test')">Testprotokoll</div>
+                    <div class="tab" onclick="switchTab('config')">config.sh</div>
+                </div>
+                <div id="readme" class="doc-content">
+                    <h2>Übersicht</h2>
+                    <p>Der FaceRecognition Service analysiert Fotos, die in einen S3-Bucket hochgeladen werden, und erkennt automatisch bekannte Persönlichkeiten. Die Ergebnisse werden als JSON-Datei in einem zweiten S3-Bucket abgelegt.</p>
+                    
+                    <h3>Inbetriebnahme</h3>
+                    <p>Führen Sie das Init-Script aus, um alle Komponenten zu erstellen:</p>
+                    <pre><code>./scripts/init.sh</code></pre>
+                    
+                    <h3>Verwendung</h3>
+                    <p>Laden Sie ein Foto hoch:</p>
+                    <pre><code>aws s3 cp foto.jpg s3://facerecognition-in-bucket/</code></pre>
+                </div>
+                <div id="test" class="doc-content" style="display: none;">
+                    <h2>Testprotokoll</h2>
+                    <p>Status: ✅ Bestanden (27.03.2026)</p>
+                    <ul>
+                        <li><strong>T1:</strong> Einzelnes Foto einer bekannten Person (Roger Federer) -> Erkannt.</li>
+                        <li><strong>T2:</strong> Foto ohne bekannte Person -> Leere Celebrity-Liste.</li>
+                        <li><strong>T4:</strong> Init-Script mehrfach ausführen -> Idempotent.</li>
+                        <li><strong>T5:</strong> Cleanup-Script -> Erfolgreich gelöscht.</li>
+                    </ul>
+                </div>
+                <div id="config" class="doc-content" style="display: none;">
+                    <h2>config.sh</h2>
+                    <pre><code>BUCKET_IN="facerecognition-in-bucket"
+BUCKET_OUT="facerecognition-out-bucket"
+LAMBDA_FUNCTION_NAME="facerecognition-lambda"
+LAMBDA_ROLE_NAME="facerecognition-lambda-role"
+REGION="us-east-1"</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.doc-content').forEach(doc => {
+                doc.style.display = 'none';
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).style.display = 'block';
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -266,15 +266,15 @@ Die detaillierte Aufgabenverteilung und Zeiteinteilung befindet sich unter [docs
 
 ### Lars Hellstern
 
-Das Projekt hat mir geholfen, den praktischen Umgang mit AWS-Diensten besser zu verstehen. Die grösste Herausforderung war die Konfiguration des S3-Triggers und der IAM-Berechtigungen – hier musste ich mehrfach die AWS-Dokumentation konsultieren. Positiv überrascht hat mich, wie einfach die Rekognition-API zu verwenden ist. Für ein nächstes Projekt würde ich früher mit dem Testen beginnen und die Fehlerbehandlung von Anfang an miteinplanen.
+Durch das Projekt habe ich den praktischen Umgang mit AWS viel besser verstanden. Die grösste Hürde war für mich am Anfang das Setup vom S3-Trigger und den IAM-Rollen – da musste ich echt viel in der Doku nachlesen. Ich war positiv überrascht, wie einfach man die Rekognition-API am Ende einbauen konnte. Beim nächsten Mal würde ich definitiv früher mit den Tests anfangen und auch die Fehlerbehandlung von Anfang an besser planen.
 
 ### Joel Mazurek
 
-Die Arbeit mit Lambda und S3 war lehrreich. Besonders das Verstehen des Event-Flows (S3 → Lambda → Rekognition → S3) hat mir den Cloud-Gedanken nähergebracht. Als Verbesserung für ein nächstes Projekt würde ich die Infrastruktur von Anfang an als Code (IaC) definieren, damit die Konfiguration noch nachvollziehbarer ist.
+Ich fand die Arbeit mit Lambda und den S3-Buckets spannend. Vor allem der Event-Flow (dass ein Bild-Upload direkt Lambda triggert) hat mir das ganze Cloud-Thema nähergebracht. Fürs nächste Mal würde ich die Infrastruktur lieber direkt als 'Infrastructure as Code' definieren, weil Bash-Scripte manchmal etwas mühsam zum Debuggen sind.
 
 ### Nazar Tobilevych
 
-Das Projekt war eine gute Gelegenheit, die theoretischen Konzepte aus dem Modul 346 in der Praxis anzuwenden. Besonders interessant fand ich die Verbindung der verschiedenen AWS-Dienste: Wie S3, Lambda und Rekognition nahtlos zusammenarbeiten, hat mir den Gedanken von Microservices in der Cloud verständlich gemacht. Die Herausforderung lag für mich vor allem im Verstehen der IAM-Berechtigungen – es war anfangs nicht offensichtlich, welche Policies die Lambda-Funktion benötigt, um auf S3 und Rekognition zugreifen zu dürfen. Mit der AWS-Dokumentation und Teamarbeit konnten wir das aber schnell lösen. Positiv war die gute Zusammenarbeit im Team und die klare Aufgabenteilung. Für ein nächstes Projekt würde ich die Infrastruktur als Infrastructure-as-Code (z.B. mit AWS CloudFormation oder Terraform) definieren, da dies die Reproduzierbarkeit und Nachvollziehbarkeit weiter verbessern würde.
+Mir hat das Projekt gut gefallen, da wir mal sehen konnten, wie in der Cloud alles zusammenspielt. S3, Lambda und Rekognition miteinander zu verbinden, war ziemlich cool. Am Anfang hatte ich aber echt Mühe mit den IAM-Berechtigungen. Es war nicht logisch, welche Rolle jetzt welche Policies braucht, damit Lambda auf S3 zugreifen darf. Durch Ausprobieren und viel Googeln in der Doku haben wir es dann aber hingekriegt. Die Teamarbeit lief super und jeder wusste, was er tun muss. Für ein nächstes Projekt würde ich sowas wie Terraform oder CloudFormation ausprobieren, anstatt alles per Bash-Script aufzusetzen.
 
 ## Quellen
 

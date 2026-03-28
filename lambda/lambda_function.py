@@ -2,7 +2,7 @@
 # Autoren: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
 # Datum:   März 2026
 # Modul:   M346 – Cloudlösungen konzipieren und realisieren
-# Schule:  Gewerbliches Berufs- und Weiterbildungszentrum St. Gallen (GBS)
+# Schule:  IMS St. Gallen
 #
 # Beschreibung:
 #   Lambda-Funktion zur Erkennung bekannter Persönlichkeiten auf Fotos
@@ -38,15 +38,15 @@ rekognition = boto3.client("rekognition")
 
 def lambda_handler(event, context):
     """
-    Hauptfunktion der Lambda: Wird ausgelöst, wenn ein Foto in den In-Bucket hochgeladen wird.
-    Ruft die AWS Rekognition Celebrity Recognition API auf und speichert das
-    JSON-Ergebnis im Out-Bucket.
+    Diese Funktion wird aufgerufen, wenn ein S3-Event reinkommt 
+    (also wenn man ein Foto hochlädt). Wir rufen dann AWS Rekognition auf 
+    und speichern die Ergebnisse als JSON in den Out-Bucket.
     """
     logger.info(f"Event erhalten: {json.dumps(event)}")
 
     try:
-        # Bucket-Name und Dateikey aus dem S3-Event extrahieren
-        # URL-Encoding auflösen (z.B. Leerzeichen im Dateinamen)
+        # Aus dem Event die Infos zum Bucket und zur Datei holen
+        # unquote_plus brauchen wir, falls es Leerzeichen im Dateinamen hat
         records = event.get("Records", [])
         if not records:
             logger.warning("Keine Records im Event gefunden.")
@@ -61,12 +61,12 @@ def lambda_handler(event, context):
         # Die Umgebungsvariable BUCKET_OUT wird im init.sh gesetzt.
         bucket_out = os.environ.get("BUCKET_OUT", bucket_in.replace("-in-", "-out-"))
 
-        # AWS Rekognition Celebrity Recognition API aufrufen
+        # AWS Rekognition API anfragen
         response = rekognition.recognize_celebrities(
             Image={"S3Object": {"Bucket": bucket_in, "Name": key}}
         )
 
-        # Ergebnis-Dictionary vorbereiten
+        # JSON Payload zusammenbauen für den Output
         result = {
             "status": "success",
             "photo": key,
@@ -74,7 +74,7 @@ def lambda_handler(event, context):
             "unrecognized_faces": response.get("UnrecognizedFaces", []),
         }
 
-        # Erkannte Persönlichkeiten aufbereiten
+        # Gefundene Personen zur Liste hinzufügen
         for celebrity in response.get("CelebrityFaces", []):
             result["celebrities"].append(
                 {
@@ -91,7 +91,7 @@ def lambda_handler(event, context):
                 }
             )
 
-        # Ausgabe-Dateiname: gleicher Name wie das Foto, aber mit .json-Endung
+        # Output Key erstellen (Endung .jpg/.png durch .json ersetzen)
         output_key = key.rsplit(".", 1)[0] + ".json"
 
         # JSON-Ergebnis in den Out-Bucket speichern

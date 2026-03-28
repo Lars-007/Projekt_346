@@ -7,8 +7,8 @@
 # Schule:  IMS St. Gallen
 #
 # Beschreibung:
-#   Automatisierte Inbetriebnahme des FaceRecognition-Service im AWS Learner Lab.
-#   Erstellt S3-Buckets, IAM-Rolle, Lambda-Funktion und S3-Trigger.
+#   Richtet unser FaceRecognition Projekt in AWS ein.
+#   Erstellt Buckets, die Lambda Funktion und die passenden Berechtigungen.
 #   Kann bedenkenlos mehrfach ausgeführt werden (idempotent).
 #
 # Voraussetzungen:
@@ -62,7 +62,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 echo -e "  AWS Account: ${BOLD}${ACCOUNT_ID}${NC}"
 echo ""
 
-# --- Schritt 1: S3 In-Bucket erstellen ---
+# --- 3. S3 Buckets machen ---
 echo -e "${YELLOW}[1/6]${NC} Erstelle S3 In-Bucket: ${BOLD}$BUCKET_IN${NC}"
 if aws s3api head-bucket --bucket "$BUCKET_IN" 2>/dev/null; then
     echo -e "       ${GREEN}✓${NC} Bucket existiert bereits."
@@ -177,7 +177,8 @@ sleep 5
 echo -e "${YELLOW}[6/6]${NC} Konfiguriere S3-Trigger"
 LAMBDA_ARN="arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:${LAMBDA_FUNCTION_NAME}"
 
-# Lambda-Berechtigung: S3 darf die Lambda-Funktion aufrufen
+# --- 5. S3 Trigger einrichten ---
+# Sagt S3 bescheid, dass er Lambda rufen soll wenn neue Bilder kommen
 aws lambda add-permission \
     --function-name "$LAMBDA_FUNCTION_NAME" \
     --statement-id "s3-trigger" \

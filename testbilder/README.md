@@ -4,7 +4,13 @@ Dieser Ordner enthält Fotos bekannter Persönlichkeiten zum Testen des FaceReco
 
 ## Bilder beschaffen
 
-Laden Sie Fotos bekannter Persönlichkeiten herunter, z. B. von [Wikimedia Commons](https://commons.wikimedia.org/), und legen Sie diese hier ab.
+Führen Sie das Download-Skript aus, um die Testbilder automatisch herunterzuladen:
+
+```bash
+./testbilder/download_testbilder.sh
+```
+
+Alternativ laden Sie Fotos bekannter Persönlichkeiten herunter, z. B. von [Wikimedia Commons](https://commons.wikimedia.org/), und legen Sie diese hier ab.
 
 ### Empfohlene Testbilder
 

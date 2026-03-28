@@ -7,131 +7,168 @@ Cloud-basierter Service zur automatischen Erkennung bekannter Persönlichkeiten 
 > **Team:** Lars Hellstern, Joel Mazurek, Nazar Tobilevych  
 > **Datum:** März 2026
 
+---
+
 ## Inhaltsverzeichnis
 
-- [Übersicht](#übersicht)
-- [Architektur](#architektur)
-- [Voraussetzungen](#voraussetzungen)
-- [Inbetriebnahme](#inbetriebnahme)
-- [Verwendung](#verwendung)
-- [Test](#test)
-- [Cleanup](#cleanup)
-- [Konfiguration](#konfiguration)
-- [Projektstruktur](#projektstruktur)
-- [Aufgabenverteilung](#aufgabenverteilung)
-- [Reflexion](#reflexion)
-- [Quellen](#quellen)
+1. [Einleitung](#einleitung)
+2. [Architektur und Datenfluss](#architektur-und-datenfluss)
+3. [Voraussetzungen](#voraussetzungen)
+4. [Inbetriebnahme](#inbetriebnahme)
+5. [Verwendung](#verwendung)
+6. [Konfiguration](#konfiguration)
+7. [Testing](#testing)
+8. [Cleanup](#cleanup)
+9. [Projektstruktur](#projektstruktur)
+10. [Aufgabenverteilung](#aufgabenverteilung)
+11. [Reflexion](#reflexion)
+12. [Quellen](#quellen)
 
-## Übersicht
+---
 
-Der FaceRecognition Service analysiert Fotos, die in einen S3-Bucket hochgeladen werden, und erkennt automatisch bekannte Persönlichkeiten. Die Ergebnisse werden als JSON-Datei in einem zweiten S3-Bucket abgelegt.
+## Einleitung
 
-| Komponente | Beschreibung |
-|---|---|
-| **S3 In-Bucket** | Empfängt die hochgeladenen Fotos |
-| **S3 Out-Bucket** | Speichert die Analyseergebnisse als JSON |
-| **Lambda-Funktion** | Verarbeitet Fotos und ruft Rekognition auf |
-| **AWS Rekognition** | Erkennt bekannte Persönlichkeiten ([Celebrity Recognition](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html)) |
+### Ausgangslage
 
-## Architektur
+Im Rahmen des Moduls M346 wird ein cloud-basierter Service entwickelt, der die Stärken von AWS-Managed-Services demonstriert. Das Ziel besteht darin, einen vollständig automatisierten Workflow zu implementieren, bei dem ein hochgeladenes Foto analysiert und die darin enthaltenen bekannten Persönlichkeiten erkannt werden.
+
+### Zielsetzung
+
+Der FaceRecognition Service soll folgende Anforderungen erfüllen:
+
+- **Automatische Verarbeitung:** Ein Foto-Upload in einen S3-Bucket löst die Analyse automatisch aus.
+- **Celebrity Recognition:** Der Service erkennt bekannte Persönlichkeiten mithilfe der [AWS Rekognition API](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) und liefert die Namen sowie Confidence-Werte.
+- **Ergebnis-Speicherung:** Die Analyseergebnisse werden als JSON-Datei in einem separaten S3-Bucket abgelegt.
+- **Vollständige Automatisierung:** Sämtliche AWS-Ressourcen werden per Bash-Script erstellt und können ebenso wieder entfernt werden.
+
+### Eingesetzte AWS-Dienste
+
+| AWS-Dienst | Funktion im Projekt | Beschreibung |
+|---|---|---|
+| **Amazon S3** | Speicherung | Zwei Buckets: einer für eingehende Fotos (In-Bucket), einer für die JSON-Ergebnisse (Out-Bucket) |
+| **AWS Lambda** | Verarbeitung | Serverless-Funktion, die durch den S3-Event-Trigger aufgerufen wird und die Bildanalyse koordiniert |
+| **AWS Rekognition** | Bildanalyse | [Celebrity Recognition API](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) zur Identifikation bekannter Persönlichkeiten |
+| **AWS IAM** | Berechtigungen | IAM-Rolle mit Policies für den Zugriff auf S3, Rekognition und CloudWatch Logs |
+
+---
+
+## Architektur und Datenfluss
+
+### Architekturdiagramm
 
 ```mermaid
 flowchart LR
-    User(["Benutzer"]) -->|Foto hochladen| S3In["S3 In-Bucket"]
-    S3In -->|S3 Event Trigger| Lambda["Lambda Funktion"]
-    Lambda -->|API Call| Rekognition["AWS Rekognition"]
+    User(["👤 Benutzer"]) -->|Foto hochladen| S3In["📦 S3 In-Bucket"]
+    S3In -->|S3 Event Trigger| Lambda["⚡ Lambda Funktion"]
+    Lambda -->|API Call| Rekognition["🔍 AWS Rekognition"]
     Rekognition -->|JSON Response| Lambda
-    Lambda -->|Ergebnis speichern| S3Out["S3 Out-Bucket"]
+    Lambda -->|Ergebnis speichern| S3Out["📦 S3 Out-Bucket"]
     S3Out -->|JSON herunterladen| User
 ```
 
-**Ablauf:**
-1. Ein Foto wird in den In-Bucket hochgeladen (`.jpg`, `.jpeg` oder `.png`)
-2. Der S3-Event-Trigger startet automatisch die Lambda-Funktion
-3. Die Lambda-Funktion sendet das Foto an die AWS Rekognition Celebrity Recognition API
-4. Rekognition analysiert das Foto und gibt die erkannten Personen mit Confidence-Werten zurück
-5. Die Lambda-Funktion speichert das Ergebnis als JSON-Datei (gleicher Dateiname, Endung `.json`) im Out-Bucket
+### Ablauf im Detail
+
+Der Datenfluss folgt einer linearen Verarbeitungskette, die vollständig ereignisgesteuert abläuft:
+
+1. **Upload:** Der Benutzer lädt ein Foto (`.jpg`, `.jpeg` oder `.png`) über die AWS CLI in den S3 In-Bucket hoch.
+2. **Trigger:** Der S3-Bucket löst über eine Event-Notification automatisch die Lambda-Funktion aus.
+3. **Analyse:** Die Lambda-Funktion extrahiert den Bucket-Namen und den Datei-Key aus dem Event und ruft die [AWS Rekognition Celebrity Recognition API](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) auf.
+4. **Verarbeitung:** Rekognition analysiert das Foto und liefert die erkannten Personen mit einem Confidence-Wert (0–100%) sowie Bounding-Box-Koordinaten zurück.
+5. **Speicherung:** Die Lambda-Funktion erstellt eine JSON-Datei mit den Ergebnissen und speichert sie im S3 Out-Bucket. Der Dateiname entspricht dem Originalfoto mit der Endung `.json`.
+6. **Abruf:** Der Benutzer lädt die JSON-Ergebnisdatei über die AWS CLI herunter.
+
+---
 
 ## Voraussetzungen
 
+Folgende Software und Zugänge werden für die Inbetriebnahme benötigt:
+
 | Anforderung | Details |
 |---|---|
-| **AWS CLI** | Installiert und konfiguriert ([Installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)) |
+| **AWS CLI v2** | Installiert und konfiguriert – [Installationsanleitung](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) |
 | **AWS Academy** | Learner Lab Zugang mit aktiver Session |
 | **Bash-Shell** | Linux, macOS oder Windows mit Git Bash / WSL |
-| **Python 3** | Für ZIP-Erstellung und formatierte Ausgabe ([Download](https://www.python.org/downloads/)) |
+| **Python 3.12+** | Für die Lambda-Funktion und Unit-Tests – [Download](https://www.python.org/downloads/) |
+| **Git** | Für das Klonen des Repositories – [Download](https://git-scm.com/downloads) |
+
+---
 
 ## Inbetriebnahme
 
-### 1. Repository klonen
+Die Inbetriebnahme erfolgt in vier Schritten. Das Init-Script erstellt sämtliche AWS-Ressourcen automatisch.
+
+### Schritt 1 – Repository klonen
 
 ```bash
 git clone https://github.com/Lars-007/Projekt_346.git
 cd Projekt_346
 ```
 
-### 2. Konfiguration anpassen (optional)
+### Schritt 2 – AWS Learner Lab starten
 
-Die Komponentennamen können in `config.sh` angepasst werden:
+1. Das [AWS Academy Learner Lab](https://www.awsacademy.com/) öffnen und die Session starten.
+2. Warten, bis der Status auf grün wechselt.
+3. Die AWS CLI Credentials kopieren und lokal konfigurieren:
 
 ```bash
-BUCKET_IN="facerecognition-in-bucket"
-BUCKET_OUT="facerecognition-out-bucket"
-LAMBDA_FUNCTION_NAME="facerecognition-lambda"
-LAMBDA_ROLE_NAME="facerecognition-lambda-role"
-REGION="us-east-1"
+aws configure
 ```
 
-### 3. AWS Learner Lab starten
+Alternativ können die Credentials direkt in die Datei `~/.aws/credentials` eingefügt werden.
 
-1. [AWS Academy Learner Lab](https://www.awsacademy.com/) öffnen
-2. Lab starten und auf grünen Status warten
-3. AWS CLI Credentials kopieren und lokal konfigurieren:
-   ```bash
-   aws configure
-   ```
-   Oder die Credentials direkt in `~/.aws/credentials` einfügen.
+### Schritt 3 – Konfiguration prüfen (optional)
 
-### 4. Init-Script ausführen
+Die Komponentennamen sind in der Datei [`config.sh`](config.sh) zentral definiert. Bei Bedarf können die Standardwerte dort angepasst werden (siehe [Konfiguration](#konfiguration)).
+
+### Schritt 4 – Init-Script ausführen
 
 ```bash
 chmod +x scripts/init.sh
 ./scripts/init.sh
 ```
 
-Das Script erstellt automatisch alle benötigten AWS-Komponenten:
-- 2× S3-Buckets (In- und Out-Bucket)
-- 1× IAM-Rolle mit den erforderlichen Policies
-- 1× Lambda-Funktion mit S3-Trigger
+Das Init-Script erstellt automatisch folgende AWS-Ressourcen:
 
-Am Ende werden die Namen aller erstellten Komponenten ausgegeben. Das Script ist **idempotent** – es kann bedenkenlos mehrfach ausgeführt werden.
+- **2× S3-Buckets** – In-Bucket für die Fotos und Out-Bucket für die Ergebnisse
+- **1× IAM-Rolle** – Mit Policies für S3, Rekognition und CloudWatch Logs
+- **1× Lambda-Funktion** – Inkl. Deployment-Package und S3-Event-Trigger
+
+Am Ende gibt das Script die Namen aller erstellten Komponenten aus. Das Script ist **idempotent**, d.h. es kann bedenkenlos mehrfach ausgeführt werden, ohne bestehende Ressourcen zu beschädigen.
+
+---
 
 ## Verwendung
 
-### Foto hochladen und Ergebnis abrufen
+### Foto hochladen
 
-Foto in den In-Bucket hochladen:
+Ein Foto wird über die AWS CLI in den In-Bucket hochgeladen:
 
 ```bash
 aws s3 cp foto.jpg s3://facerecognition-in-bucket/
 ```
 
-Ergebnis aus dem Out-Bucket herunterladen (nach einigen Sekunden Verarbeitung):
+### Ergebnis abrufen
+
+Nach wenigen Sekunden Verarbeitungszeit wird das JSON-Ergebnis aus dem Out-Bucket heruntergeladen:
 
 ```bash
 aws s3 cp s3://facerecognition-out-bucket/foto.json ./ergebnisse/
 ```
 
-### Automatisierter Test (empfohlen)
+### Automatisierter Ablauf mit dem Test-Script
 
-Das Test-Script führt Upload, Warten und Download in einem Schritt aus:
+Das Test-Script kombiniert Upload, Warten und Download in einem Schritt:
 
 ```bash
 chmod +x scripts/test.sh
-./scripts/test.sh testbilder/roger_federer.jpg
+./scripts/test.sh testbilder/jeff_bezos.jpg
 ```
 
-### Beispiel JSON-Ergebnis
+Das Script gibt die erkannten Personen mit Name und Confidence-Wert direkt in der Konsole aus.
+
+### Beispiel eines JSON-Ergebnisses
+
+Die folgende JSON-Datei zeigt ein reales Analyseergebnis für ein Foto von Jeff Bezos. Ein vollständiges Beispiel befindet sich unter [`ergebnisse/jeff_bezos.json`](ergebnisse/jeff_bezos.json).
 
 ```json
 {
@@ -155,134 +192,201 @@ chmod +x scripts/test.sh
 }
 ```
 
-Ein vollständiges Beispiel-Ergebnis befindet sich unter [`ergebnisse/jeff_bezos.json`](ergebnisse/jeff_bezos.json).
+**Erklärung der wichtigsten Felder:**
 
-## Test
+| Feld | Beschreibung |
+|---|---|
+| `status` | Gibt an, ob die Verarbeitung erfolgreich war (`success` oder `error`) |
+| `photo` | Dateiname des analysierten Fotos |
+| `celebrities` | Liste der erkannten Persönlichkeiten mit Name, Confidence und Position |
+| `confidence` | Treffsicherheit der Erkennung in Prozent (0–100) |
+| `bounding_box` | Position und Grösse des erkannten Gesichts im Bild (relative Koordinaten) |
+| `unrecognized_faces` | Liste der erkannten, aber nicht identifizierten Gesichter |
 
-### Automatisierter Test mit dem Test-Script
+---
+
+## Konfiguration
+
+Alle Konfigurationswerte werden zentral in der Datei [`config.sh`](config.sh) verwaltet. Sämtliche Scripts (`init.sh`, `test.sh`, `cleanup.sh`) lesen diese Datei automatisch ein. Änderungen müssen daher nur an einer Stelle vorgenommen werden.
+
+| Variable | Standardwert | Beschreibung |
+|---|---|---|
+| `BUCKET_IN` | `facerecognition-in-bucket` | Name des S3-Eingangs-Buckets für Fotos |
+| `BUCKET_OUT` | `facerecognition-out-bucket` | Name des S3-Ausgangs-Buckets für JSON-Ergebnisse |
+| `LAMBDA_FUNCTION_NAME` | `facerecognition-lambda` | Name der Lambda-Funktion |
+| `LAMBDA_ROLE_NAME` | `facerecognition-lambda-role` | Name der IAM-Rolle |
+| `REGION` | `us-east-1` | AWS Region (das Learner Lab nutzt `us-east-1`) |
+
+---
+
+## Testing
+
+Die Qualität des Services wird durch manuelle Integrationstests und automatisierte Unit-Tests sichergestellt.
+
+### Integrationstests
+
+Die Integrationstests werden über das Test-Script durchgeführt, das den gesamten Workflow (Upload → Verarbeitung → Download) automatisiert:
 
 ```bash
 ./scripts/test.sh testbilder/<foto-datei>
 ```
 
-Das Test-Script führt folgende Schritte automatisch aus:
+Das Script führt folgende Schritte aus:
 
-1. **Upload:** Lädt das Foto in den In-Bucket hoch
-2. **Warten:** Pollt den Out-Bucket bis das Ergebnis vorhanden ist (max. 30s)
-3. **Download:** Lädt die JSON-Ergebnisdatei herunter nach `ergebnisse/`
-4. **Ausgabe:** Gibt die erkannten Personen mit Name und Wahrscheinlichkeit formatiert aus
+1. Lädt das Foto in den S3 In-Bucket hoch
+2. Wartet, bis das JSON-Ergebnis im Out-Bucket erscheint (max. 30 Sekunden)
+3. Lädt die Ergebnisdatei in den Ordner `ergebnisse/` herunter
+4. Gibt die erkannten Personen mit Name und Confidence formatiert aus
 
 ### Unit-Tests
 
-Die Lambda-Funktion wird durch automatisierte Unit-Tests mit Mocks abgesichert:
+Die Lambda-Funktion wird zusätzlich durch automatisierte Unit-Tests mit Mocking abgesichert:
 
 ```bash
 python -m pytest tests/mock_lambda_test.py -v
 ```
 
-Die Tests prüfen:
-- Erkennung einer bekannten Person (Roger Federer)
-- Verarbeitung eines Fotos ohne bekannte Person
-- Fehlerbehandlung bei leerem Event
-- Fehlerbehandlung bei API-Fehler
-- Korrekte Verarbeitung URL-kodierter Dateinamen
+Die Unit-Tests decken folgende Szenarien ab:
+
+| Testfall | Beschreibung |
+|---|---|
+| Celebrity-Erkennung | Erkennung einer bekannten Person (z.B. Roger Federer) |
+| Leere Celebrity-Liste | Foto ohne bekannte Person wird korrekt verarbeitet |
+| Leere Records | Lambda-Funktion gibt HTTP 400 bei fehlendem Event zurück |
+| API-Fehler | Lambda-Funktion gibt HTTP 500 bei einem Rekognition-Fehler zurück |
+| URL-Encoding | Dateinamen mit Sonderzeichen werden korrekt dekodiert |
 
 ### Testprotokoll
 
-Das vollständige Testprotokoll mit Screenshots befindet sich unter [docs/testprotokoll.md](docs/testprotokoll.md).
+Das vollständige Testprotokoll mit Screenshots befindet sich unter [`docs/testprotokoll.md`](docs/testprotokoll.md). Die folgende Tabelle zeigt eine Zusammenfassung der durchgeführten Testfälle:
 
-| Testfall | Beschreibung | Erwartetes Ergebnis | Status |
+| ID | Testfall | Erwartetes Ergebnis | Status |
 |---|---|---|---|
-| T1 | Foto einer bekannten Person hochladen | Person wird erkannt, JSON wird erstellt | ✅ |
-| T2 | Foto ohne bekannte Person hochladen | Leere Celebrity-Liste, JSON wird erstellt | ✅ |
-| T3 | Mehrere Fotos nacheinander hochladen | Jedes Foto wird einzeln verarbeitet | ✅ |
-| T4 | Init-Script mehrfach ausführen | Keine Fehler, Komponenten bleiben intakt | ✅ |
-| T5 | Cleanup-Script ausführen | Alle AWS-Ressourcen werden gelöscht | ✅ |
-| T6 | Test-Script ohne Parameter | Fehlermeldung mit Verwendungshinweis | ✅ |
-| T7 | Unit-Tests der Lambda-Funktion | Alle 5 Tests bestanden | ✅ |
+| T1 | Foto einer bekannten Person hochladen | Person wird erkannt, JSON wird erstellt | ✅ Bestanden |
+| T2 | Foto ohne bekannte Person hochladen | Leere Celebrity-Liste, JSON wird erstellt | ✅ Bestanden |
+| T3 | Mehrere Fotos nacheinander hochladen | Jedes Foto wird einzeln verarbeitet | ✅ Bestanden |
+| T4 | Init-Script mehrfach ausführen | Keine Fehler, idempotentes Verhalten | ✅ Bestanden |
+| T5 | Cleanup-Script ausführen | Alle AWS-Ressourcen werden gelöscht | ✅ Bestanden |
+| T6 | Test-Script ohne Parameter ausführen | Fehlermeldung mit Verwendungshinweis | ✅ Bestanden |
+| T7 | Unit-Tests der Lambda-Funktion | Alle 5 Tests bestanden | ✅ Bestanden |
+
+**Screenshot – Ausgabe des Test-Scripts (T1):**
+
+![T1 – Test-Script Ausgabe](docs/screenshots/t1_test_output.png)
+
+**Screenshot – JSON-Ergebnis im Out-Bucket (AWS Console):**
+
+![T1 – Out-Bucket JSON](docs/screenshots/t1_outbucket.png)
+
+---
 
 ## Cleanup
 
-Alle AWS-Ressourcen entfernen:
+Alle erstellten AWS-Ressourcen können mit dem Cleanup-Script vollständig entfernt werden:
 
 ```bash
 chmod +x scripts/cleanup.sh
 ./scripts/cleanup.sh
 ```
 
-Das Script entfernt:
-- S3 In-Bucket (inkl. aller hochgeladenen Fotos)
-- S3 Out-Bucket (inkl. aller JSON-Ergebnisse)
-- Lambda-Funktion
-- IAM-Policies und IAM-Rolle
+Das Script entfernt die folgenden Komponenten in der korrekten Reihenfolge:
 
-## Konfiguration
+1. S3 In-Bucket (inkl. aller hochgeladenen Fotos)
+2. S3 Out-Bucket (inkl. aller JSON-Ergebnisse)
+3. Lambda-Funktion
+4. IAM-Policies und IAM-Rolle
 
-Alle Komponentennamen werden zentral in [`config.sh`](config.sh) definiert. Änderungen müssen nur dort vorgenommen werden – alle Scripts lesen die Konfiguration automatisch ein.
+**Screenshot – Cleanup-Script Ausgabe:**
 
-| Variable | Standardwert | Beschreibung |
-|---|---|---|
-| `BUCKET_IN` | `facerecognition-in-bucket` | Name des Eingangs-Buckets |
-| `BUCKET_OUT` | `facerecognition-out-bucket` | Name des Ausgangs-Buckets |
-| `LAMBDA_FUNCTION_NAME` | `facerecognition-lambda` | Name der Lambda-Funktion |
-| `LAMBDA_ROLE_NAME` | `facerecognition-lambda-role` | Name der IAM-Rolle |
-| `REGION` | `us-east-1` | AWS Region (Learner Lab verwendet us-east-1) |
+![T5 – Cleanup](docs/screenshots/t5_cleanup.png)
+
+---
 
 ## Projektstruktur
 
+Das Repository ist wie folgt aufgebaut:
+
 ```
 Projekt_346/
-├── README.md                    # Einstiegspunkt der Dokumentation
-├── config.sh                    # Zentrale Konfiguration (Bucket-/Lambda-Namen)
+├── README.md                       # Hauptdokumentation (dieses Dokument)
+├── config.sh                       # Zentrale Konfiguration (Bucket-/Lambda-Namen)
+│
 ├── lambda/
-│   └── lambda_function.py       # Lambda-Funktionscode (Python)
+│   └── lambda_function.py          # Lambda-Funktionscode (Python)
+│
 ├── scripts/
-│   ├── init.sh                  # Automatisierte Inbetriebnahme
-│   ├── test.sh                  # Automatisierter Test mit formatierter Ausgabe
-│   └── cleanup.sh               # Entfernung aller AWS-Ressourcen
-├── testbilder/
-│   └── README.md                # Anleitung zum Beschaffen von Testbildern
+│   ├── init.sh                     # Automatisierte Inbetriebnahme aller AWS-Ressourcen
+│   ├── test.sh                     # Automatisierter Test (Upload → Warten → Download)
+│   └── cleanup.sh                  # Entfernung aller AWS-Ressourcen
+│
+├── testbilder/                     # Ordner für Testfotos
+│
 ├── ergebnisse/
-│   └── jeff_bezos.json          # Beispiel-Ergebnis einer Analyse
+│   └── jeff_bezos.json             # Beispiel-Ergebnis einer Analyse
+│
 ├── tests/
-│   └── mock_lambda_test.py      # Unit-Tests für die Lambda-Funktion
+│   └── mock_lambda_test.py         # Unit-Tests für die Lambda-Funktion
+│
 └── docs/
-    ├── testprotokoll.md         # Testprotokoll mit Screenshots
-    ├── aufgabenverteilung.md    # Aufgabenverteilung im Team
-    └── screenshots/             # Screenshots der Testdurchführung
+    ├── testprotokoll.md            # Testprotokoll mit Screenshots
+    ├── aufgabenverteilung.md       # Aufgabenverteilung und Zeiteinteilung
+    └── screenshots/                # Screenshots der Testdurchführung
 ```
+
+---
 
 ## Aufgabenverteilung
 
-Die detaillierte Aufgabenverteilung und Zeiteinteilung befindet sich unter [docs/aufgabenverteilung.md](docs/aufgabenverteilung.md).
+Die detaillierte Aufgabenverteilung und Zeiteinteilung befindet sich unter [`docs/aufgabenverteilung.md`](docs/aufgabenverteilung.md).
 
-| Teammitglied | Hauptverantwortung |
-|---|---|
-| **Lars Hellstern** | Scripts & Infrastruktur (`init.sh`, `test.sh`, `cleanup.sh`, `config.sh`) |
-| **Joel Mazurek** | Lambda-Funktion & Testing (`lambda_function.py`, `mock_lambda_test.py`) |
-| **Nazar Tobilevych** | Dokumentation & Qualitätssicherung (`README.md`, Testprotokoll) |
+### Rollen im Team
+
+| Teammitglied | Hauptverantwortung | Wichtigste Dateien |
+|---|---|---|
+| **Lars Hellstern** | Scripts & Infrastruktur | [`init.sh`](scripts/init.sh), [`test.sh`](scripts/test.sh), [`cleanup.sh`](scripts/cleanup.sh), [`config.sh`](config.sh) |
+| **Joel Mazurek** | Lambda-Funktion & Testing | [`lambda_function.py`](lambda/lambda_function.py), [`mock_lambda_test.py`](tests/mock_lambda_test.py) |
+| **Nazar Tobilevych** | Dokumentation & Qualitätssicherung | [`README.md`](README.md), [`testprotokoll.md`](docs/testprotokoll.md) |
+
+### Zeitplan
+
+| Woche | Datum | Aufgaben | Verantwortlich |
+|---|---|---|---|
+| 1 | 17.03.2026 | Projektauftrag klären, Repository aufsetzen, Architektur planen | Alle |
+| 1 | 17.03.2026 | S3-Buckets erstellen, IAM-Rolle konfigurieren | Lars |
+| 1 | 17.03.2026 | Lambda-Funktion Grundstruktur erstellen | Joel |
+| 2 | 24.03.2026 | Init-Script, Test-Script, Cleanup-Script | Lars |
+| 2 | 24.03.2026 | Rekognition-API Integration, Fehlerbehandlung | Joel |
+| 2 | 24.03.2026 | README.md, Testprotokoll-Vorlage | Nazar |
+| 3 | 27.03.2026 | Tests durchführen, Screenshots erstellen | Joel, Nazar |
+| 3 | 27.03.2026 | Unit-Tests schreiben und ausführen | Joel |
+| 3 | 27.03.2026 | Dokumentation finalisieren, Reflexionen schreiben | Alle |
+| 3 | 29.03.2026 | Abgabe und letzte Qualitätsprüfung | Alle |
+
+---
 
 ## Reflexion
 
 ### Lars Hellstern
 
-Durch das Projekt habe ich den praktischen Umgang mit AWS viel besser verstanden. Die grösste Hürde war für mich am Anfang das Setup vom S3-Trigger und den IAM-Rollen – da musste ich echt viel in der Doku nachlesen. Ich war positiv überrascht, wie einfach man die Rekognition-API am Ende einbauen konnte. Beim nächsten Mal würde ich definitiv früher mit den Tests anfangen und auch die Fehlerbehandlung von Anfang an besser planen.
+Durch das Projekt habe ich den praktischen Umgang mit AWS deutlich besser verstanden. Die grösste Herausforderung war das initiale Setup der S3-Event-Notifications und der IAM-Rollen, da die Abhängigkeiten zwischen den Policies nicht sofort ersichtlich waren. Positiv überrascht hat mich, wie einfach sich die Rekognition-API letztlich einbinden liess. Beim nächsten Projekt würde ich früher mit den Tests beginnen und die Fehlerbehandlung von Anfang an systematischer planen.
 
 ### Joel Mazurek
 
-Ich fand die Arbeit mit Lambda und den S3-Buckets spannend. Vor allem der Event-Flow (dass ein Bild-Upload direkt Lambda triggert) hat mir das ganze Cloud-Thema nähergebracht. Fürs nächste Mal würde ich die Infrastruktur lieber direkt als 'Infrastructure as Code' definieren, weil Bash-Scripte manchmal etwas mühsam zum Debuggen sind.
+Die Arbeit mit Lambda und den S3-Buckets fand ich besonders spannend, insbesondere der Event-Flow: Ein Bild-Upload löst direkt die Lambda-Funktion aus, ohne dass ein Server betrieben werden muss. Dieses Konzept hat mir das Thema Serverless-Computing sehr gut veranschaulicht. Für ein nächstes Projekt würde ich die Infrastruktur mit einem Infrastructure-as-Code-Tool wie Terraform oder CloudFormation definieren, da Bash-Scripts bei komplexerer Logik schwieriger zu debuggen sind.
 
 ### Nazar Tobilevych
 
-Mir hat das Projekt gut gefallen, da wir mal sehen konnten, wie in der Cloud alles zusammenspielt. S3, Lambda und Rekognition miteinander zu verbinden, war ziemlich cool. Am Anfang hatte ich aber echt Mühe mit den IAM-Berechtigungen. Es war nicht logisch, welche Rolle jetzt welche Policies braucht, damit Lambda auf S3 zugreifen darf. Durch Ausprobieren und viel Googeln in der Doku haben wir es dann aber hingekriegt. Die Teamarbeit lief super und jeder wusste, was er tun muss. Für ein nächstes Projekt würde ich sowas wie Terraform oder CloudFormation ausprobieren, anstatt alles per Bash-Script aufzusetzen.
+Mir hat das Projekt gut gefallen, weil wir erleben konnten, wie verschiedene Cloud-Dienste in der Praxis zusammenspielen. S3, Lambda und Rekognition zu einer funktionierenden Pipeline zu verbinden, war eine wertvolle Erfahrung. Die grösste Schwierigkeit bestand für mich darin, die IAM-Berechtigungen korrekt zu konfigurieren – welche Rolle welche Policies benötigt, war anfangs nicht intuitiv. Durch systematisches Lesen der AWS-Dokumentation und Ausprobieren haben wir das Problem gelöst. Die Teamarbeit lief reibungslos, weil die Aufgabenverteilung von Beginn an klar definiert war.
+
+---
 
 ## Quellen
 
-| Quelle | Verwendung |
+| Quelle | Verwendung im Projekt |
 |---|---|
-| [AWS Rekognition - Recognizing Celebrities](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) | API für die Gesichtserkennung |
-| [AWS Lambda - Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html) | Lambda-Funktion erstellen und konfigurieren |
-| [AWS S3 - Developer Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) | S3-Buckets und Event-Notifications |
-| [AWS CLI - Command Reference](https://docs.aws.amazon.com/cli/latest/reference/) | CLI-Befehle für die Automatisierung |
-| [Boto3 Dokumentation](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) | Python AWS SDK (Lambda-Code) |
-| [Python unittest.mock](https://docs.python.org/3/library/unittest.mock.html) | Mocking für Unit-Tests |
+| [AWS Rekognition – Recognizing Celebrities](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) | Celebrity Recognition API für die Gesichtserkennung |
+| [AWS Lambda – Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html) | Erstellung und Konfiguration der Lambda-Funktion |
+| [AWS S3 – Developer Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html) | S3-Buckets und Event-Notifications |
+| [AWS CLI – Command Reference](https://docs.aws.amazon.com/cli/latest/reference/) | CLI-Befehle für die Automatisierung der Infrastruktur |
+| [Boto3 Dokumentation](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) | Python AWS SDK für den Lambda-Code |
+| [Python unittest.mock](https://docs.python.org/3/library/unittest.mock.html) | Mocking-Framework für die Unit-Tests |

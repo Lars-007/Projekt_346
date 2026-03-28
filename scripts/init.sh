@@ -4,7 +4,7 @@
 # Autoren: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
 # Datum:   März 2026
 # Modul:   M346 – Cloudlösungen konzipieren und realisieren
-# Schule:  GBS St. Gallen
+# Schule:  IMS St. Gallen
 #
 # Beschreibung:
 #   Automatisierte Inbetriebnahme des FaceRecognition-Service im AWS Learner Lab.

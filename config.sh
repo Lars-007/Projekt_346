@@ -4,7 +4,7 @@
 # Autoren: Lars Hellstern, Joel Mazurek, Nazar Tobilevych
 # Datum:   März 2026
 # Modul:   M346 – Cloudlösungen konzipieren und realisieren
-# Schule:  GBS St. Gallen
+# Schule:  IMS St. Gallen
 #
 # Beschreibung:
 #   Zentrale Konfigurationsdatei für alle Scripts (init.sh, test.sh, cleanup.sh).

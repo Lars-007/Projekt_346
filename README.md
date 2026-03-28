@@ -3,7 +3,7 @@
 Cloud-basierter Service zur automatischen Erkennung bekannter Persönlichkeiten auf Fotos mittels AWS Rekognition.
 
 > **Modul:** M346 – Cloudlösungen konzipieren und realisieren  
-> **Schule:** GBS St. Gallen  
+> **Schule:** IMS St. Gallen  
 > **Team:** Lars Hellstern, Joel Mazurek, Nazar Tobilevych  
 > **Datum:** März 2026
 

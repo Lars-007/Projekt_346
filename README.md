@@ -50,11 +50,17 @@ Der FaceRecognition Service soll folgende Anforderungen erfüllen:
 | **AWS Rekognition** | Bildanalyse | [Celebrity Recognition API](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) zur Identifikation bekannter Persönlichkeiten |
 | **AWS IAM** | Berechtigungen | IAM-Rolle mit Policies für den Zugriff auf S3, Rekognition und CloudWatch Logs |
 
+Die folgende Abbildung zeigt die eingesetzten AWS-Dienste und ihre Verbindungen in der AWS Management Console:
+
+`[PLATZHALTER: Screenshot der AWS Management Console mit den erstellten Ressourcen (S3-Buckets, Lambda-Funktion, IAM-Rolle)]`
+
 ---
 
 ## Architektur und Datenfluss
 
 ### Architekturdiagramm
+
+Das folgende Diagramm zeigt die Gesamtarchitektur des FaceRecognition Services. Alle Komponenten befinden sich in der AWS-Cloud und kommunizieren über definierte Schnittstellen:
 
 ```mermaid
 flowchart LR
@@ -66,6 +72,33 @@ flowchart LR
     S3Out -->|JSON herunterladen| User
 ```
 
+*Abbildung 1: Architekturdiagramm – Der Datenfluss verläuft von links (Benutzer-Upload) nach rechts (JSON-Download). Die Pfeile zeigen die Richtung der Kommunikation zwischen den AWS-Diensten.*
+
+### Sequenzdiagramm
+
+Das nachstehende Sequenzdiagramm zeigt den zeitlichen Ablauf der Kommunikation zwischen den einzelnen Komponenten bei der Verarbeitung eines Fotos:
+
+```mermaid
+sequenceDiagram
+    participant B as 👤 Benutzer
+    participant S3In as 📦 S3 In-Bucket
+    participant L as ⚡ Lambda
+    participant R as 🔍 Rekognition
+    participant S3Out as 📦 S3 Out-Bucket
+
+    B->>S3In: aws s3 cp foto.jpg s3://in-bucket/
+    S3In->>L: S3 Event Notification (PutObject)
+    L->>L: Bucket-Name und Key aus Event extrahieren
+    L->>R: recognize_celebrities(Image)
+    R-->>L: JSON Response (CelebrityFaces, Confidence)
+    L->>L: Ergebnis-JSON zusammenbauen
+    L->>S3Out: put_object(foto.json)
+    B->>S3Out: aws s3 cp s3://out-bucket/foto.json
+    S3Out-->>B: JSON-Ergebnisdatei
+```
+
+*Abbildung 2: Sequenzdiagramm – Zeitlicher Ablauf eines Foto-Uploads bis zum Abruf der Ergebnisse. Die gesamte Verarbeitung dauert typischerweise 2–5 Sekunden.*
+
 ### Ablauf im Detail
 
 Der Datenfluss folgt einer linearen Verarbeitungskette, die vollständig ereignisgesteuert abläuft:
@@ -76,6 +109,21 @@ Der Datenfluss folgt einer linearen Verarbeitungskette, die vollständig ereigni
 4. **Verarbeitung:** Rekognition analysiert das Foto und liefert die erkannten Personen mit einem Confidence-Wert (0–100%) sowie Bounding-Box-Koordinaten zurück.
 5. **Speicherung:** Die Lambda-Funktion erstellt eine JSON-Datei mit den Ergebnissen und speichert sie im S3 Out-Bucket. Der Dateiname entspricht dem Originalfoto mit der Endung `.json`.
 6. **Abruf:** Der Benutzer lädt die JSON-Ergebnisdatei über die AWS CLI herunter.
+
+### IAM-Berechtigungsmodell
+
+Die Lambda-Funktion benötigt eine IAM-Rolle mit spezifischen Policies, um auf die anderen AWS-Dienste zugreifen zu können. Das folgende Diagramm zeigt die Berechtigungsstruktur:
+
+```mermaid
+flowchart TD
+    Role["🔐 IAM-Rolle\nfacerecognition-lambda-role"] --> P1["📜 AmazonS3ReadOnlyAccess\nLesen aus dem In-Bucket"]
+    Role --> P2["📜 AmazonS3FullAccess\nSchreiben in den Out-Bucket"]
+    Role --> P3["📜 AmazonRekognitionReadOnlyAccess\nZugriff auf die Rekognition API"]
+    Role --> P4["📜 CloudWatchLogsFullAccess\nLogging für Debugging"]
+    Role --> Trust["🤝 Trust Policy\nLambda darf die Rolle annehmen"]
+```
+
+*Abbildung 3: IAM-Berechtigungsmodell – Die Lambda-Funktion übernimmt eine IAM-Rolle, die den Zugriff auf vier AWS-Dienste gewährt. Ohne diese Policies kann die Funktion nicht ausgeführt werden.*
 
 ---
 
@@ -134,6 +182,12 @@ Das Init-Script erstellt automatisch folgende AWS-Ressourcen:
 - **1× Lambda-Funktion** – Inkl. Deployment-Package und S3-Event-Trigger
 
 Am Ende gibt das Script die Namen aller erstellten Komponenten aus. Das Script ist **idempotent**, d.h. es kann bedenkenlos mehrfach ausgeführt werden, ohne bestehende Ressourcen zu beschädigen.
+
+**Screenshot – Erfolgreiche Ausführung des Init-Scripts:**
+
+![Init-Script Ausgabe](docs/screenshots/t4_init_first.png)
+
+*Abbildung 4: Ausgabe des Init-Scripts – Alle Komponenten wurden erfolgreich erstellt. Die grünen Meldungen bestätigen die Erstellung jeder einzelnen Ressource.*
 
 ---
 
@@ -202,6 +256,14 @@ Die folgende JSON-Datei zeigt ein reales Analyseergebnis für ein Foto von Jeff 
 | `confidence` | Treffsicherheit der Erkennung in Prozent (0–100) |
 | `bounding_box` | Position und Grösse des erkannten Gesichts im Bild (relative Koordinaten) |
 | `unrecognized_faces` | Liste der erkannten, aber nicht identifizierten Gesichter |
+
+### Erklärung der Bounding Box
+
+Die `bounding_box` beschreibt die Position des erkannten Gesichts im Bild mithilfe relativer Koordinaten (Werte zwischen 0 und 1). Die folgende Darstellung veranschaulicht die vier Werte:
+
+`[PLATZHALTER: Grafik die zeigt, wie die Bounding Box (left, top, width, height) auf einem Foto die Position des erkannten Gesichts markiert]`
+
+*Abbildung 5: Bounding Box – Die Werte `left` und `top` definieren die obere linke Ecke des Rahmens, `width` und `height` bestimmen dessen Grösse. Alle Werte sind relativ zur Bildgrösse (0.0 = links/oben, 1.0 = rechts/unten).*
 
 ---
 
@@ -274,9 +336,19 @@ Das vollständige Testprotokoll mit Screenshots befindet sich unter [`docs/testp
 
 ![T1 – Test-Script Ausgabe](docs/screenshots/t1_test_output.png)
 
+*Abbildung 6: Terminal-Ausgabe des Test-Scripts – Das Script zeigt den Upload-Fortschritt, die Wartezeit und die erkannten Personen mit Confidence-Werten an.*
+
 **Screenshot – JSON-Ergebnis im Out-Bucket (AWS Console):**
 
 ![T1 – Out-Bucket JSON](docs/screenshots/t1_outbucket.png)
+
+*Abbildung 7: AWS Console – Der Out-Bucket enthält die generierte JSON-Ergebnisdatei. Der Dateiname entspricht dem Originalfoto mit der Endung `.json`.*
+
+**Screenshot – Mehrere verarbeitete Fotos im Out-Bucket (T3):**
+
+![T3 – Mehrere JSON-Dateien](docs/screenshots/t3_multiple_results.png)
+
+*Abbildung 8: AWS Console – Nach dem Upload mehrerer Fotos enthält der Out-Bucket für jedes verarbeitete Bild eine eigene JSON-Ergebnisdatei.*
 
 ---
 
@@ -299,6 +371,12 @@ Das Script entfernt die folgenden Komponenten in der korrekten Reihenfolge:
 **Screenshot – Cleanup-Script Ausgabe:**
 
 ![T5 – Cleanup](docs/screenshots/t5_cleanup.png)
+
+*Abbildung 9: Terminal-Ausgabe des Cleanup-Scripts – Alle vier Ressourcentypen (S3-Buckets, Lambda-Funktion, IAM-Policies, IAM-Rolle) werden nacheinander entfernt.*
+
+`[PLATZHALTER: Screenshot der AWS Console nach dem Cleanup, der zeigt, dass die S3-Buckets und die Lambda-Funktion nicht mehr vorhanden sind]`
+
+*Abbildung 10: AWS Console nach dem Cleanup – Die zuvor erstellten Ressourcen sind vollständig entfernt.*
 
 ---
 

@@ -12,6 +12,10 @@
 #   Komponentennamen müssen nur hier vorgenommen werden.
 # ============================================================================
 
+# AWS Environment Variables Setup (Verhindert, dass Scripts stehen bleiben oder Regionen fehlen)
+export AWS_PAGER=""
+export AWS_DEFAULT_REGION="us-east-1"
+
 # S3-Buckets
 BUCKET_IN="facerecognition-in-bucket"
 BUCKET_OUT="facerecognition-out-bucket"

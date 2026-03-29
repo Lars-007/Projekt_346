@@ -4,7 +4,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Datum** | 27.03.2026 |
+| **Datum** | 29.03.2026 |
 | **Testpersonen** | Lars Hellstern, Joel Mazurek, Nazar Tobilevych |
 | **AWS Region** | us-east-1 |
 | **Learner Lab Session** | AWS Academy Learner Lab |
@@ -23,7 +23,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Joel Mazurek |
 | **Eingabe** | `./scripts/test.sh testbilder/roger_federer.jpg` |
 | **Erwartetes Ergebnis** | Person wird erkannt (Name + Confidence ≥ 90%), JSON-Datei wird im Out-Bucket erstellt |
@@ -45,7 +45,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Joel Mazurek |
 | **Eingabe** | `./scripts/test.sh testbilder/unbekannt.jpg` (Foto einer unbekannten Person) |
 | **Erwartetes Ergebnis** | Leere `celebrities`-Liste, JSON-Datei wird trotzdem erstellt |
@@ -61,7 +61,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Lars Hellstern |
 | **Eingabe** | Drei verschiedene Fotos nacheinander mit `./scripts/test.sh` hochgeladen: `roger_federer.jpg`, `barack_obama.jpg`, `albert_einstein.jpg` |
 | **Erwartetes Ergebnis** | Für jedes Foto wird eine eigene JSON-Datei im Out-Bucket erstellt |
@@ -79,7 +79,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Nazar Tobilevych |
 | **Eingabe** | `./scripts/init.sh` wird zweimal hintereinander ausgeführt |
 | **Erwartetes Ergebnis** | Kein Fehler, bestehende Komponenten bleiben intakt (idempotentes Verhalten) |
@@ -101,7 +101,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Lars Hellstern |
 | **Eingabe** | `./scripts/cleanup.sh` |
 | **Erwartetes Ergebnis** | Alle AWS-Ressourcen (Buckets, Lambda, IAM-Rolle) werden gelöscht |
@@ -121,7 +121,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Nazar Tobilevych |
 | **Eingabe** | `./scripts/test.sh` (ohne Foto-Parameter) |
 | **Erwartetes Ergebnis** | Fehlermeldung mit Verwendungshinweis, kein Absturz |
@@ -139,7 +139,7 @@
 
 | Eigenschaft | Wert |
 |---|---|
-| **Testdatum** | 27.03.2026 |
+| **Testdatum** | 29.03.2026 |
 | **Testperson** | Joel Mazurek |
 | **Eingabe** | `python -m pytest tests/mock_lambda_test.py -v` |
 | **Erwartetes Ergebnis** | Alle 5 Unit-Tests bestehen |

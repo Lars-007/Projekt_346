@@ -53,6 +53,10 @@
 | **Status** | ✅ Bestanden |
 | **Fazit** | Die Funktion verarbeitet auch Fotos ohne bekannte Persönlichkeiten fehlerfrei und liefert ein vollständiges JSON-Ergebnis. Keine Massnahmen notwendig. |
 
+**Screenshot – Ausgabe des Test-Scripts (keine Person erkannt):**
+
+![T2 – Keine Person erkannt](screenshots/t2_no_celebrity.png)
+
 **Ergebnis:** Die Ausgabe zeigte `Erkannte Personen: 0` und `Nicht erkannte Gesichter: 1`. Der Unit-Test `test_keine_celebrity_erkannt` in `tests/mock_lambda_test.py` belegt dieses Verhalten zusätzlich automatisiert.
 
 ---

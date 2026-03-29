@@ -27,7 +27,7 @@
 | **Testperson** | Joel Mazurek |
 | **Eingabe** | `./scripts/test.sh testbilder/roger_federer.jpg` |
 | **Erwartetes Ergebnis** | Person wird erkannt (Name + Confidence ≥ 90%), JSON-Datei wird im Out-Bucket erstellt |
-| **Tatsächliches Ergebnis** | Roger Federer wurde erkannt mit MatchConfidence ≥ 100%, JSON-Datei `roger_federer.json` wurde im Out-Bucket abgelegt |
+| **Tatsächliches Ergebnis** | Roger Federer wurde erkannt mit MatchConfidence von 100%, JSON-Datei `roger_federer.json` wurde im Out-Bucket abgelegt |
 | **Status** | ✅ Bestanden |
 | **Fazit** | Der Service erkennt bekannte Persönlichkeiten wie Roger Federer zuverlässig. Die Rekognition-API liefert eine Treffergenauigkeit von 100%. Die gesamte Pipeline (Upload-Trigger-Lambda-Rekognition-S3) funktioniert einwandfrei. |
 
@@ -160,4 +160,4 @@ Alle sieben Testfälle wurden erfolgreich bestanden. Der FaceRecognition Service
 - **Fehlerbehandlung:** Fehlende Parameter und API-Fehler werden sauber abgefangen
 - **Unit-Tests:** Die Lambda-Funktion ist durch automatisierte Tests abgesichert
 
-Der Service ist bereit für den produktiven Einsatz im AWS Learner Lab.
+

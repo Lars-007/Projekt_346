@@ -62,7 +62,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 echo -e "  AWS Account: ${BOLD}${ACCOUNT_ID}${NC}"
 echo ""
 
-# --- 3. S3 Buckets machen ---
+# --- Schritt 1: S3 In-Bucket erstellen ---
 echo -e "${YELLOW}[1/6]${NC} Erstelle S3 In-Bucket: ${BOLD}$BUCKET_IN${NC}"
 if aws s3api head-bucket --bucket "$BUCKET_IN" 2>/dev/null; then
     echo -e "       ${GREEN}✓${NC} Bucket existiert bereits."
@@ -177,8 +177,7 @@ sleep 5
 echo -e "${YELLOW}[6/6]${NC} Konfiguriere S3-Trigger"
 LAMBDA_ARN="arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:${LAMBDA_FUNCTION_NAME}"
 
-# --- 5. S3 Trigger einrichten ---
-# Sagt S3 bescheid, dass er Lambda rufen soll wenn neue Bilder kommen
+# Sagt S3 Bescheid, dass Lambda bei neuen Bildern aufgerufen werden soll
 aws lambda add-permission \
     --function-name "$LAMBDA_FUNCTION_NAME" \
     --statement-id "s3-trigger" \

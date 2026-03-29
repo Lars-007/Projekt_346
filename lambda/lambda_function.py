@@ -23,6 +23,7 @@
 
 import json
 import os
+from typing import Any, Dict
 import boto3
 import urllib.parse
 import logging
@@ -36,7 +37,7 @@ s3 = boto3.client("s3")
 rekognition = boto3.client("rekognition")
 
 
-def lambda_handler(event, context):
+def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Diese Funktion wird aufgerufen, wenn ein S3-Event reinkommt 
     (also wenn man ein Foto hochlädt). Wir rufen dann AWS Rekognition auf 

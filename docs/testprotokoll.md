@@ -11,7 +11,7 @@
 | **Lambda-Funktion** | facerecognition-lambda |
 | **In-Bucket** | facerecognition-in-bucket |
 | **Out-Bucket** | facerecognition-out-bucket |
-| **Betriebssystem** | Windows 11 mit Git Bash |
+| **Betriebssystem** | macOS (Apple Silicon) mit zsh |
 | **AWS CLI Version** | 2.x |
 | **Python Version** | 3.12 |
 
@@ -53,9 +53,7 @@
 | **Status** | ✅ Bestanden |
 | **Fazit** | Die Funktion verarbeitet auch Fotos ohne bekannte Persönlichkeiten fehlerfrei und liefert ein vollständiges JSON-Ergebnis. Keine Massnahmen notwendig. |
 
-**Screenshot – Ausgabe des Test-Scripts (keine Person erkannt):**
-
-![T2 – Keine Person erkannt](screenshots/t2_no_celebrity.png)
+**Ergebnis:** Die Ausgabe zeigte `Erkannte Personen: 0` und `Nicht erkannte Gesichter: 1`. Der Unit-Test `test_keine_celebrity_erkannt` in `tests/mock_lambda_test.py` belegt dieses Verhalten zusätzlich automatisiert.
 
 ---
 
@@ -114,6 +112,8 @@
 **Screenshot – Cleanup-Script Ausgabe:**
 
 ![T5 – Cleanup](screenshots/t5_cleanup.png)
+
+> *Hinweis: Der Cleanup wurde nach Abschluss aller anderen Tests durchgeführt. Die Ressourcen wurden anschliessend mit `init.sh` für die Abgabe wiederhergestellt.*
 
 ---
 

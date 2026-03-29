@@ -215,30 +215,30 @@ Das Test-Script kombiniert Upload, Warten und Download in einem Schritt:
 
 ```bash
 chmod +x scripts/test.sh
-./scripts/test.sh testbilder/jeff_bezos.jpg
+./scripts/test.sh testbilder/roger_federer.jpg
 ```
 
 Das Script gibt die erkannten Personen mit Name und Confidence-Wert direkt in der Konsole aus.
 
 ### Beispiel eines JSON-Ergebnisses
 
-Die folgende JSON-Datei zeigt ein reales Analyseergebnis für ein Foto von Jeff Bezos. Ein vollständiges Beispiel befindet sich unter [`ergebnisse/jeff_bezos.json`](ergebnisse/jeff_bezos.json).
+Die folgende JSON-Datei zeigt ein reales Analyseergebnis für ein Foto von Roger Federer. Ein vollständiges Beispiel befindet sich unter [`ergebnisse/roger_federer.json`](ergebnisse/roger_federer.json).
 
 ```json
 {
   "status": "success",
-  "photo": "jeff_bezos.jpg",
+  "photo": "roger_federer.jpg",
   "celebrities": [
     {
-      "name": "Jeff Bezos",
-      "confidence": 99.95,
-      "id": "3Ir0du6",
-      "urls": ["www.imdb.com/name/nm1757263"],
+      "name": "Roger Federer",
+      "confidence": 100.0,
+      "id": "6bN4xP",
+      "urls": ["www.wikidata.org/wiki/Q1426", "www.imdb.com/name/nm1716574"],
       "bounding_box": {
-        "width": 0.5123,
-        "height": 0.6845,
-        "left": 0.2345,
-        "top": 0.0987
+        "width": 0.2131,
+        "height": 0.3971,
+        "left": 0.3842,
+        "top": 0.2647
       }
     }
   ],

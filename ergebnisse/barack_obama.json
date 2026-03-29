@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "photo": "barack_obama.jpg",
+  "celebrities": [
+    {
+      "name": "Madelyn Dunham",
+      "confidence": 100.0,
+      "id": "4zI5xM8G",
+      "urls": [
+        "www.wikidata.org/wiki/Q2856311"
+      ],
+      "bounding_box": {
+        "width": 0.3865,
+        "height": 0.4079,
+        "left": 0.4104,
+        "top": 0.1863
+      }
+    }
+  ],
+  "unrecognized_faces": []
+}

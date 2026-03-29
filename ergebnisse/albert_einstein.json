@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "photo": "albert_einstein.jpg",
+  "celebrities": [
+    {
+      "name": "Albert Einstein",
+      "confidence": 100.0,
+      "id": "124uk2q",
+      "urls": [
+        "www.wikidata.org/wiki/Q937",
+        "www.imdb.com/name/nm0251868"
+      ],
+      "bounding_box": {
+        "width": 0.3343,
+        "height": 0.3691,
+        "left": 0.3473,
+        "top": 0.2
+      }
+    }
+  ],
+  "unrecognized_faces": []
+}

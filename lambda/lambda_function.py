@@ -67,17 +67,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             Image={"S3Object": {"Bucket": bucket_in, "Name": key}}
         )
 
-        # JSON Payload zusammenbauen für den Output
-        result = {
-            "status": "success",
-            "photo": key,
-            "celebrities": [],
-            "unrecognized_faces": response.get("UnrecognizedFaces", []),
-        }
-
-        # Gefundene Personen zur Liste hinzufügen
+        # Liste der gefundene Personen aufbauen
+        celebrities_list = []
         for celebrity in response.get("CelebrityFaces", []):
-            result["celebrities"].append(
+            celebrities_list.append(
                 {
                     "name": celebrity["Name"],
                     "confidence": round(celebrity["MatchConfidence"], 2),
@@ -91,6 +84,14 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     },
                 }
             )
+
+        # JSON Payload zusammenbauen für den Output
+        result = {
+            "status": "success",
+            "photo": key,
+            "celebrities": celebrities_list,
+            "unrecognized_faces": response.get("UnrecognizedFaces", []),
+        }
 
         # Output Key erstellen (Endung .jpg/.png durch .json ersetzen)
         output_key = key.rsplit(".", 1)[0] + ".json"

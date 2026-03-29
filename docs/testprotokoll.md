@@ -12,7 +12,7 @@
 | **In-Bucket** | facerecognition-in-bucket |
 | **Out-Bucket** | facerecognition-out-bucket |
 | **Betriebssystem** | macOS (Apple Silicon) mit zsh |
-| **AWS CLI Version** | 2.x |
+| **AWS CLI Version** | 2.34.19 |
 | **Python Version** | 3.12 |
 
 ---

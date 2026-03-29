@@ -24,7 +24,7 @@
 import json
 import os
 from typing import Any, Dict
-import boto3
+import boto3  # type: ignore
 import urllib.parse
 import logging
 

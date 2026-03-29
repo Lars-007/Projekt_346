@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "photo": "roger_federer.jpg",
+  "celebrities": [
+    {
+      "name": "Roger Federer",
+      "confidence": 100.0,
+      "id": "6bN4xP",
+      "urls": [
+        "www.wikidata.org/wiki/Q1426",
+        "www.imdb.com/name/nm1716574"
+      ],
+      "bounding_box": {
+        "width": 0.2131,
+        "height": 0.3971,
+        "left": 0.3842,
+        "top": 0.2647
+      }
+    }
+  ],
+  "unrecognized_faces": []
+}

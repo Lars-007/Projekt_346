@@ -19,8 +19,8 @@ BUCKET_OUT="facerecognition-out-bucket"
 # Lambda-Funktion
 LAMBDA_FUNCTION_NAME="facerecognition-lambda"
 
-# IAM-Rolle für die Lambda-Funktion
-LAMBDA_ROLE_NAME="facerecognition-lambda-role"
+# IAM-Rolle für die Lambda-Funktion (Learner Lab nutzt LabRole)
+LAMBDA_ROLE_NAME="LabRole"
 
 # AWS Region (Learner Lab nutzt us-east-1)
 REGION="us-east-1"

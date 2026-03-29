@@ -25,11 +25,11 @@
 |---|---|
 | **Testdatum** | 27.03.2026 |
 | **Testperson** | Joel Mazurek |
-| **Eingabe** | `./scripts/test.sh testbilder/jeff_bezos.jpg` |
+| **Eingabe** | `./scripts/test.sh testbilder/roger_federer.jpg` |
 | **Erwartetes Ergebnis** | Person wird erkannt (Name + Confidence ≥ 90%), JSON-Datei wird im Out-Bucket erstellt |
-| **Tatsächliches Ergebnis** | Jeff Bezos wurde erkannt mit MatchConfidence ≥ 99%, JSON-Datei `jeff_bezos.json` wurde im Out-Bucket abgelegt |
+| **Tatsächliches Ergebnis** | Roger Federer wurde erkannt mit MatchConfidence ≥ 100%, JSON-Datei `roger_federer.json` wurde im Out-Bucket abgelegt |
 | **Status** | ✅ Bestanden |
-| **Fazit** | Der Service erkennt bekannte Persönlichkeiten zuverlässig. Die Rekognition-API liefert eine sehr hohe Treffergenauigkeit. Keine Massnahmen notwendig. |
+| **Fazit** | Der Service erkennt bekannte Persönlichkeiten wie Roger Federer zuverlässig. Die Rekognition-API liefert eine Treffergenauigkeit von 100%. Die gesamte Pipeline (Upload-Trigger-Lambda-Rekognition-S3) funktioniert einwandfrei. |
 
 **Screenshot – Ausgabe des Test-Scripts:**
 

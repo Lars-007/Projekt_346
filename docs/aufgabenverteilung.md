@@ -5,8 +5,8 @@
 | Name | GitHub-Benutzername | Rolle |
 |---|---|---|
 | Lars Hellstern | Lars-007 | Scripts & Infrastruktur |
-| Joel Mazurek | – | Lambda-Funktion & Testing |
-| Nazar Tobilevych | – | Dokumentation & Testing |
+| Joel Mazurek | Joelski117 | Lambda-Funktion & Testing |
+| Nazar Tobilevych | nazar813| Dokumentation & Testing |
 
 ## Aufgabenverteilung
 

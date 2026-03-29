@@ -50,9 +50,9 @@ Der FaceRecognition Service soll folgende Anforderungen erfüllen:
 | **AWS Rekognition** | Bildanalyse | [Celebrity Recognition API](https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html) zur Identifikation bekannter Persönlichkeiten |
 | **AWS IAM** | Berechtigungen | IAM-Rolle mit Policies für den Zugriff auf S3, Rekognition und CloudWatch Logs |
 
-Die folgende Abbildung zeigt die eingesetzten AWS-Dienste und ihre Verbindungen in der AWS Management Console:
+Die folgende Abbildung zeigt die Konfiguration des S3-Triggers in der AWS Lambda Console:
 
-`[PLATZHALTER: Screenshot der AWS Management Console mit den erstellten Ressourcen (S3-Buckets, Lambda-Funktion, IAM-Rolle)]`
+![AWS Lambda Trigger](docs/screenshots/lambda_trigger.png)
 
 ---
 
@@ -261,7 +261,7 @@ Die folgende JSON-Datei zeigt ein reales Analyseergebnis für ein Foto von Jeff 
 
 Die `bounding_box` beschreibt die Position des erkannten Gesichts im Bild mithilfe relativer Koordinaten (Werte zwischen 0 und 1). Die folgende Darstellung veranschaulicht die vier Werte:
 
-`[PLATZHALTER: Grafik die zeigt, wie die Bounding Box (left, top, width, height) auf einem Foto die Position des erkannten Gesichts markiert]`
+![Bounding Box Erklärung](https://docs.aws.amazon.com/rekognition/latest/dg/images/bounding-box.png)
 
 *Abbildung 5: Bounding Box – Die Werte `left` und `top` definieren die obere linke Ecke des Rahmens, `width` und `height` bestimmen dessen Grösse. Alle Werte sind relativ zur Bildgrösse (0.0 = links/oben, 1.0 = rechts/unten).*
 
@@ -374,7 +374,7 @@ Das Script entfernt die folgenden Komponenten in der korrekten Reihenfolge:
 
 *Abbildung 9: Terminal-Ausgabe des Cleanup-Scripts – Alle vier Ressourcentypen (S3-Buckets, Lambda-Funktion, IAM-Policies, IAM-Rolle) werden nacheinander entfernt.*
 
-`[PLATZHALTER: Screenshot der AWS Console nach dem Cleanup, der zeigt, dass die S3-Buckets und die Lambda-Funktion nicht mehr vorhanden sind]`
+Alle Ressourcen wurden erfolgreich entfernt.
 
 *Abbildung 10: AWS Console nach dem Cleanup – Die zuvor erstellten Ressourcen sind vollständig entfernt.*
 

@@ -437,7 +437,7 @@ Die detaillierte Aufgabenverteilung und Zeiteinteilung befindet sich unter [`doc
 | 2 | 24.03.2026 | README.md, Testprotokoll-Vorlage | Nazar |
 | 3 | 27.03.2026 | Unit-Tests schreiben und ausführen | Joel |
 | 3 | 27.03.2026 | Dokumentation finalisieren, Reflexionen schreiben | Alle |
-| 3 | 29.03.2026 | Tests durchführen, Screenshots erstellen | Joel, Nazar |
+| 3 | 29.03.2026 | Tests durchführen, Screenshots erstellen | Alle |
 | 3 | 29.03.2026 | Abgabe und letzte Qualitätsprüfung | Alle |
 
 ---

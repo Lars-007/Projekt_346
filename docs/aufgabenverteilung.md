@@ -45,6 +45,6 @@
 
 ## Arbeitsweise
 
-Die Zusammenarbeit erfolgte über ein gemeinsames GitHub-Repository. Jedes Teammitglied hat mit seinem persönlichen GitHub-Account gearbeitet y regelmässig Commits erstellt. Die Arbeit wurde über Issues und direkte Kommunikation koordiniert.
+Die Zusammenarbeit erfolgte über ein gemeinsames GitHub-Repository. Jedes Teammitglied hat mit seinem persönlichen GitHub-Account gearbeitet und regelmässig Commits erstellt. Die Arbeit wurde über Issues und direkte Kommunikation koordiniert.
 
 Die Fortschritte und Änderungen sind in der Commit-History des Repositories nachvollziehbar.

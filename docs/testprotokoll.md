@@ -63,9 +63,9 @@
 |---|---|
 | **Testdatum** | 27.03.2026 |
 | **Testperson** | Lars Hellstern |
-| **Eingabe** | Drei verschiedene Fotos nacheinander mit `./scripts/test.sh` hochgeladen: `jeff_bezos.jpg`, `roger_federer.jpg`, `barack_obama.jpg` |
+| **Eingabe** | Drei verschiedene Fotos nacheinander mit `./scripts/test.sh` hochgeladen: `roger_federer.jpg`, `barack_obama.jpg`, `albert_einstein.jpg` |
 | **Erwartetes Ergebnis** | Für jedes Foto wird eine eigene JSON-Datei im Out-Bucket erstellt |
-| **Tatsächliches Ergebnis** | Drei JSON-Dateien (`jeff_bezos.json`, `roger_federer.json`, `barack_obama.json`) wurden korrekt erstellt, jede mit dem passenden Analyse-Ergebnis |
+| **Tatsächliches Ergebnis** | Drei JSON-Dateien (`roger_federer.json`, `barack_obama.json`, `albert_einstein.json`) wurden korrekt erstellt, jede mit dem passenden Analyse-Ergebnis |
 | **Status** | ✅ Bestanden |
 | **Fazit** | Die Lambda-Funktion skaliert korrekt und verarbeitet mehrere Uploads unabhängig voneinander. Keine Massnahmen notwendig. |
 

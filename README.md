@@ -276,7 +276,7 @@ Alle Konfigurationswerte werden zentral in der Datei [`config.sh`](config.sh) ve
 | `BUCKET_IN` | `facerecognition-in-bucket` | Name des S3-Eingangs-Buckets für Fotos |
 | `BUCKET_OUT` | `facerecognition-out-bucket` | Name des S3-Ausgangs-Buckets für JSON-Ergebnisse |
 | `LAMBDA_FUNCTION_NAME` | `facerecognition-lambda` | Name der Lambda-Funktion |
-| `LAMBDA_ROLE_NAME` | `facerecognition-lambda-role` | Name der IAM-Rolle |
+| `LAMBDA_ROLE_NAME` | `LabRole` | Name der IAM-Rolle (vorgegeben durch AWS Academy Learner Lab) |
 | `REGION` | `us-east-1` | AWS Region (das Learner Lab nutzt `us-east-1`) |
 
 ---
@@ -400,7 +400,7 @@ Projekt_346/
 ├── testbilder/                     # Ordner für Testfotos
 │
 ├── ergebnisse/
-│   └── jeff_bezos.json             # Beispiel-Ergebnis einer Analyse
+│   └── roger_federer.json          # Beispiel-Ergebnis einer Analyse
 │
 ├── tests/
 │   └── mock_lambda_test.py         # Unit-Tests für die Lambda-Funktion
